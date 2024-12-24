@@ -56,7 +56,9 @@ Email: laurenmoorejm@gmail.com
 
 
 ### 3rd-Party Software
-1. 
+1.  **[Inquirer.js](https://github.com/SBoudrias/Inquirer.js)** Copyright (c) 2023 Simon Boudrias (twitter: [@vaxilart](https://twitter.com/Vaxilart)) - Licensed under the MIT license.
+
+2. [Pg Package](https://www.npmjs.com/package/pg)
 
 
 ## Screenshots
