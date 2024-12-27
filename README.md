@@ -54,7 +54,8 @@ Email: laurenmoorejm@gmail.com
 ### Tutorials
 1. https://www.geeksforgeeks.org/sql-case-statement/
 2. https://www.w3schools.com/sql/sql_operators.asp
-3. 
+3. https://node-postgres.com/features/pooling
+4. 
 
 
 ### 3rd-Party Software
