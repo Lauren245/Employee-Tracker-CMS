@@ -52,7 +52,9 @@ Email: laurenmoorejm@gmail.com
 ## Resources
 
 ### Tutorials
-1. 
+1. https://www.geeksforgeeks.org/sql-case-statement/
+2. https://www.w3schools.com/sql/sql_operators.asp
+3. 
 
 
 ### 3rd-Party Software
