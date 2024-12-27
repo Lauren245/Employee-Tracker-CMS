@@ -13,12 +13,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^16.4.7",
     "inquirer": "^12.3.0",
     "pg": "^8.13.1"
   },
   "devDependencies": {
     "@types/inquirer": "^9.0.7",
     "@types/node": "^20.12.7",
+    "@types/pg": "^8.11.10",
     "typescript": "^5.7.2"
   }
 }
