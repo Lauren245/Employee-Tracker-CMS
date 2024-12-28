@@ -13,11 +13,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cli-table": "^0.3.11",
     "dotenv": "^16.4.7",
     "inquirer": "^12.3.0",
     "pg": "^8.13.1"
   },
   "devDependencies": {
+    "@types/cli-table": "^0.3.4",
     "@types/inquirer": "^9.0.7",
     "@types/node": "^20.12.7",
     "@types/pg": "^8.11.10",

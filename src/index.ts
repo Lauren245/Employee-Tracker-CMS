@@ -1,36 +1,44 @@
-import { QueryResult } from "pg";
-import { pool, connectToDB } from "./connection.js";
+import inquirer from "inquirer";
+import {connectToDB } from "./connection.js";
 
-await connectToDB();
+import Query from "./query.js";
 
+async function runPrompts(){
+    //create variable to control loop so inquirer prompt keeps running until the user chooses to exit
+    let exit: boolean = false
+    await connectToDB();
+    do{
+        //defining a const here so I can use await for queries
+        const answers = await inquirer.prompt([
+            {
+                type: 'list',
+                name: 'actions',
+                message: 'please choose from the following options: ',
+                choices: [
+                    'view all departments', 
+                    'view all roles', 
+                    'view all employees', 
+                    'add a department', 
+                    'add a role', 
+                    'add an employee',
+                    'update an employee role',
+                    'exit'
+                ],
+            }
+        ])
 
-console.log("test log");
+        console.log(`answers = ${JSON.stringify(answers)}`);
+        if(answers.actions === 'view all departments'){
+            await Query.viewAllDepartments();
+        }
+        if(answers.actions === 'exit'){
+            exit = true;
+            //tell node.js to exit the program 
+            process.exit(0);
+        }
+       console.log(`at end of do/while loop. exit = ${exit}`); 
+    }while(!exit)
+}
 
-const sql = `SELECT emp.id AS ID, emp.first_name AS "First Name",
-        emp.last_name AS "Last Name", rol.title AS Title, 
-        dep.name AS Department, rol.salary AS Salary,
-        --include case statement to replace empty space with null if employee has no manager
-        CASE
-            WHEN mgr.id IS NULL THEN 'null'
-            ELSE CONCAT(mgr.first_name, ' ', mgr.last_name)
-        END AS Manager
-FROM employee AS emp
-    JOIN role AS rol 
-        ON emp.role_id = rol.id
-    JOIN department AS dep 
-        ON rol.department_id = dep.id
-    LEFT JOIN employee AS mgr
-        ON emp.manager_id = mgr.id
---ensures the employee can't be their own manager.
-WHERE emp.id <> emp.manager_id OR emp.manager_id IS NULL;`
+await runPrompts();
 
-pool.query(sql, (error: Error, result: QueryResult) => {
-    if(error){
-        console.error(`Unable to process query: ${error.stack}`);
-        return
-    }
-    else{
-        const { rows } = result;
-        console.table(rows);
-    }
-})
