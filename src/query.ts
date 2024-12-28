@@ -45,13 +45,11 @@ class Query{
 
     async outputTable(result: QueryResult){
         console.log("RUNNING outputTable method");
-        console.log(`typeof(result.rowCount) = ${typeof(result.rowCount)}`);
-        console.log(`result.rowCount = ${result.rowCount}`);
         try{
             //ensure result.rowCount is truthy
             if(result.rowCount){
+                //get the column names using the keys of the first row.
                 const columnNames = Object.keys(result.rows[0]);
-                console.log('Table Headers:', columnNames);
 
                 //calculate the max width for each column in the array to ensure that there is proper spacing
                 /*this calculation takes into account both the length of the column name, and the length of the
@@ -75,7 +73,13 @@ class Query{
                 //.repeat will return copies of '-' until it matches the length of the header.
                 console.log('-'.repeat(header.length)); 
 
-                
+                //loop through and format each row and log the result to the console.
+                result.rows.forEach(row => {
+                    console.log(formatRow(row));
+                });
+
+                //console log a space after the table output to improve readability
+                console.log("\n");
 
             }else{
                 //TODO: check to see if this returns the expected output
