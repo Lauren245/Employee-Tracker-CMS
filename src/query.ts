@@ -25,23 +25,121 @@ class Query{
         console.log("inside query constructor");
     }
 
-    async viewAllDepartments(){
-        //this.initialize();
-        this.sqlStatement = 
-        `SELECT *
-         FROM department;`;
-        
-         try{
-            const result: QueryResult = await pool.query(this.sqlStatement);
-            await this.outputTable(result);
+    //TODO: consider making special error-handling method to avoid repitition. 
+
+    //This method constructs queries to view all of the elements related to the provided table
+    buildViewAllQuery(tableName: string): string{
+        console.log('RUNNING buildViewAllQuery');
+        console.log(`this.sqlStatement =  ${this.sqlStatement}`);
+        console.log(`table name passed in = ${tableName}`);
+        try{
+            switch(tableName){
+                case 'department':
+    
+                    this.sqlStatement = 
+                        `SELECT *
+                        FROM department;`;
+                    break;
+    
+                case 'role':
+    
+                    this.sqlStatement =
+                        `SELECT rol.id AS id, rol.title AS title, 
+                            dep.name AS department, rol.salary AS salary
+                        FROM role AS rol
+                            JOIN department AS dep
+                                ON rol.department_id = dep.id;`;
+                    break;
+    
+                case 'employee':
+                    
+                    this.sqlStatement = 
+                        `SELECT emp.id AS ID, emp.first_name AS "First Name",
+                            emp.last_name AS "Last Name", rol.title AS Title, 
+                            dep.name AS Department, rol.salary AS Salary,
+                            --include case statement to replace empty space with null if employee has no manager
+                            CASE
+                                WHEN mgr.id IS NULL THEN 'null'
+                                ELSE CONCAT(mgr.first_name, ' ', mgr.last_name)
+                            END AS Manager
+                        FROM employee AS emp
+                            JOIN role AS rol 
+                                ON emp.role_id = rol.id
+                            JOIN department AS dep 
+                                ON rol.department_id = dep.id
+                            LEFT JOIN employee AS mgr
+                                ON emp.manager_id = mgr.id
+                        --ensures the employee can't be their own manager.
+                        WHERE emp.id <> emp.manager_id OR emp.manager_id IS NULL;`;
+                    break;
+                default:
+                    throw new Error(`unable to build a query for the table "${tableName}".`);               
+            };
+            console.log(`RETURNING ${this.sqlStatement}`);
+            return this.sqlStatement;
+
+        }catch(error){
+            if(error instanceof Error){
+                console.error(`\n buildViewAllQuery encountered error: ${error.stack}`);
+            }else{
+                console.error(`\n buildViewAllQuery encountered an unexpected error: ${error}`);
+            }
+            return '';
+        }
+    };
+
+    //When given a valid SQL statement (meaning this.sqlStatement is truthy), this method queries the database and calls the method to render the table
+    //I isolated this from the code that builds the SQL statement, because (unlike that code), this code remains the same for every view all query
+    async renderViewAllQuery(){
+        console.log('RUNNING renderViewAllQuery');
+        console.log(`this.sqlStatement =  ${this.sqlStatement}`);
+        try{
+            //ensure sqlStatement property has a truthy value.
+            if(this.sqlStatement){
+                const result: QueryResult = await pool.query(this.sqlStatement);
+                await this.outputTable(result);
+            }
+            else{
+                throw new Error(`Invalid SQL statement.`);
+            }
          }catch(error){
             if(error instanceof Error){
-                console.error(`\n viewAllDepartments encountered error: ${error.stack}`);
+                console.error(`\n renderViewAll encountered error: ${error.stack}`);
             }else{
-                console.error(`\n viewAllDepartments encountered an unexpected error: ${error}`);
+                console.error(`\n renderViewAll encountered an unexpected error: ${error}`);
             }
          }
     }
+
+        //TODO: figure out how to modify this to preventSQL injections, there is a possiblility that the pool statement will handle this.
+        async addDepartment(departmentName: string){
+            console.log('RUNNING addDepartment');
+            console.log(`Department name passed in = ${departmentName}`);
+    
+            try{
+                const lowerCaseDepName = departmentName.toLowerCase();
+                const checkQuery = `SELECT COUNT(*) FROM department WHERE LOWER(name) = $1`;
+                const checkResult = await pool.query(checkQuery, [lowerCaseDepName]);
+                
+                console.log(`checkResult = ${JSON.stringify(checkResult.rows)}`);
+                //check if a record was returned from the previous query
+                if(parseInt(checkResult.rows[0].count) > 0){
+                    //I considered making this an error, but it isn't really an error that the app needs to know about.
+                    console.log(`Department with name "${departmentName}" already exists in the database`);
+                }
+                else{
+                    //the calling function ensures that departmentName is valid before calling this method.
+                    this.sqlStatement = 
+                        `INSERT INTO department (name)
+                         VALUES ($1);`;
+
+                    await pool.query(this.sqlStatement, [departmentName]);
+                    console.log(`Department "${departmentName} was added successfully!"`);                    
+                }               
+            }catch(error){
+                console.error(`\n addDepartment encountered an unexpected error. ${error}`);
+            }
+        }
 
     async outputTable(result: QueryResult){
         console.log("RUNNING outputTable method");
