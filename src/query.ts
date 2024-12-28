@@ -112,34 +112,39 @@ class Query{
     }
 
         //TODO: figure out how to modify this to preventSQL injections, there is a possiblility that the pool statement will handle this.
-        async addDepartment(departmentName: string){
-            console.log('RUNNING addDepartment');
-            console.log(`Department name passed in = ${departmentName}`);
+    async addDepartment(departmentName: string){
+        console.log('RUNNING addDepartment');
+        console.log(`Department name passed in = ${departmentName}`);
     
-            try{
-                const lowerCaseDepName = departmentName.toLowerCase();
-                const checkQuery = `SELECT COUNT(*) FROM department WHERE LOWER(name) = $1`;
-                const checkResult = await pool.query(checkQuery, [lowerCaseDepName]);
+        try{
+            /*I'm converting departmentName to lowerCase and comparing it to existing department names (converted to lowercase using the database
+              function LOWER()). The goal is to prevent matching department names with different casings from being counted as 
+              seperate departments (i.e. SALES, sales, and Sales are considered to be the same department). This conversion is only done 
+              when testing for existing department names that match the departmentName parameter. That way, the user can still create new department 
+              names using whichever form of casing they prefer.*/
+            const lowerCaseDepName = departmentName.toLowerCase();
+            const checkQuery = `SELECT COUNT(*) FROM department WHERE LOWER(name) = $1`;
+            const checkResult = await pool.query(checkQuery, [lowerCaseDepName]);
                 
-                console.log(`checkResult = ${JSON.stringify(checkResult.rows)}`);
-                //check if a record was returned from the previous query
-                if(parseInt(checkResult.rows[0].count) > 0){
-                    //I considered making this an error, but it isn't really an error that the app needs to know about.
-                    console.log(`Department with name "${departmentName}" already exists in the database`);
-                }
-                else{
-                    //the calling function ensures that departmentName is valid before calling this method.
-                    this.sqlStatement = 
-                        `INSERT INTO department (name)
-                         VALUES ($1);`;
-
-                    await pool.query(this.sqlStatement, [departmentName]);
-                    console.log(`Department "${departmentName} was added successfully!"`);                    
-                }               
-            }catch(error){
-                console.error(`\n addDepartment encountered an unexpected error. ${error}`);
+            console.log(`checkResult = ${JSON.stringify(checkResult.rows)}`);
+            //check if a record was returned from the previous query
+            if(parseInt(checkResult.rows[0].count) > 0){
+                //I considered making this an error, but it isn't really an error that the app needs to know about.
+                console.log(`Department with name "${departmentName}" already exists in the database`);
             }
+            else{
+                //the calling function ensures that departmentName is valid before calling this method.
+                this.sqlStatement = 
+                    `INSERT INTO department (name)
+                     VALUES ($1);`;
+
+                await pool.query(this.sqlStatement, [departmentName]);
+                console.log(`Department "${departmentName} was added successfully!"`);                    
+            }               
+        }catch(error){
+            console.error(`\n addDepartment encountered an unexpected error. ${error}`);
         }
+    }
 
     async outputTable(result: QueryResult){
         console.log("RUNNING outputTable method");
