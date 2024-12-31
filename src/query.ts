@@ -26,7 +26,7 @@ class Query{
     }
 
     async getDepartments(): Promise<string[]>{
-        console.log("RUNNING getDepartments");
+        //console.log("RUNNING getDepartments");
         try{
             this.sqlStatement = 
                 `SELECT name
@@ -40,7 +40,6 @@ class Query{
                     resultArr.push((Object.values(result.rows[i]).toString()));
                 }
 
-                console.log(`objectValues = ${JSON.stringify(resultArr)}`);
                 return resultArr;
             }
             //code will only reach this point if nothing is returned from the DB query.
@@ -170,11 +169,56 @@ class Query{
                      VALUES ($1);`;
 
                 await pool.query(this.sqlStatement, [departmentName]);
-                console.log(`Department "${departmentName} was added successfully!"`);                    
+                console.log(`Department "${departmentName}" was added successfully!`);                    
             }               
         }catch(error){
             console.error(`\n addDepartment encountered an unexpected error. ${error}`);
         }
+    }
+
+    async addRole(roleName: string, salary: number, departmentName: string){
+        console.log("RUNNING addRole method");
+        try{
+            //check if role is duplicate
+            const lowerCaseRoleName = roleName.toLowerCase();
+            const lowerCaseDepName = departmentName.toLowerCase();
+            /*only counting duplicates if another record has the same roleName AND departmentName,
+                that way a role name can be used in another department*/
+            const checkQuery = 
+                `SELECT COUNT(*) 
+                FROM role 
+                    JOIN department
+                        ON role.department_id = department.id
+                WHERE LOWER(role.title) = $1 AND LOWER(department.name) = $2;`;
+
+            const checkResult = await pool.query(checkQuery, [lowerCaseRoleName, lowerCaseDepName]);
+            //check if a record was returned from the previous query
+            if(parseInt(checkResult.rows[0].count) > 0){
+                console.log(`The role "${roleName}" in the "${departmentName}" department already exists in the database`);
+            }
+            else{
+                //get the department id first
+                const idQuery = 
+                    `SELECT id
+                     FROM department 
+                     WHERE name = $1;`;
+                const result = await pool.query(idQuery, [departmentName]);
+
+                //convert object to type string so query knows what to do with it
+                //[0][0] accesses the first value in the array of values in the first row.
+                const departmentId = Object.values(result.rows[0])[0] as string;
+
+                this.sqlStatement = 
+                    `INSERT INTO role (title, salary, department_id)
+                     VALUES ($1, $2, $3);`;
+
+                await pool.query(this.sqlStatement, [roleName, salary, departmentId]);
+                console.log(`role "${roleName}" was added successfully!`);
+            }
+        }catch(error){
+            console.error(`\n addRole encountered an unexpected error. ${error}`);
+        }
+       
     }
 
     async outputTable(result: QueryResult){

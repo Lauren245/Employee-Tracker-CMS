@@ -6,11 +6,10 @@ async function runPrompts() {
     // Create variable to control loop so inquirer prompt keeps running until the user chooses to exit
     let exit: boolean = false;
     await connectToDB();
+    //create an array of department names to store in case the user wants to add a role
+    let departmentsArr: string[] = await Query.getDepartments();
     do {
         try {
-            //create an array of department names to store in case the user wants to add a role
-            // const departmentsArr = JSON.stringify(await Query.getDepartments());
-            const departmentsArr: string[] = await Query.getDepartments();
             // Defining a const here so I can use await for queries
             const answers = await inquirer.prompt([
                 {
@@ -55,7 +54,7 @@ async function runPrompts() {
                 }
             ]);
             //TODO: figure out a way to handle falsey values in if statement checks inside the switch statement
-            console.log(`answers = ${JSON.stringify(answers)}`);
+            //console.log(`answers = ${JSON.stringify(answers)}`);
             let sqlStatement = '';
             switch (answers.actions) {
                 case 'view all departments':
@@ -80,13 +79,15 @@ async function runPrompts() {
                     //check that departmentName is truthy 
                     if(answers.departmentName){
                         await Query.addDepartment(answers.departmentName);
+                        //a department has been added so the departments array must be updated
+                        departmentsArr = await Query.getDepartments();
                     }
                     break;
                 case 'add a role':
                     //check that selectDepartment is truthy
-                    //just checking selectDepartment because it is the last in a series of prompts
+                    //only checking selectDepartment because it is the last in a series of prompts
                     if(answers.selectDepartment){
-                        //await Query.getDepartments();
+                        await Query.addRole(answers.roleName, answers.roleSalary, answers.selectDepartment);
                     }
                     break;
                 case 'exit':
@@ -105,7 +106,7 @@ async function runPrompts() {
                 console.error(`An unexpected error occurred: ${error}`);
             }
         }
-        console.log(`At end of do/while loop. exit = ${exit}`);
+        //console.log(`At end of do/while loop. exit = ${exit}`);
     } while (!exit);
 }
 
