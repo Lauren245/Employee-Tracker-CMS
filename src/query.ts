@@ -25,13 +25,44 @@ class Query{
         console.log("inside query constructor");
     }
 
+    async getDepartments(): Promise<string[]>{
+        console.log("RUNNING getDepartments");
+        try{
+            this.sqlStatement = 
+                `SELECT name
+                FROM department;`;
+
+            const result: QueryResult = await pool.query(this.sqlStatement);
+            const resultArr: string[] = []
+
+            if(result.rowCount){
+                for(let i = 0; i < result.rowCount; i++){
+                    resultArr.push((Object.values(result.rows[i]).toString()));
+                }
+
+                console.log(`objectValues = ${JSON.stringify(resultArr)}`);
+                return resultArr;
+            }
+            //code will only reach this point if nothing is returned from the DB query.
+            throw new Error(`unable to get departments.`);
+
+        }catch(error){
+            if(error instanceof Error){
+                console.error(`\n getDepartments encountered error: ${error.stack}`);
+            }else{
+                console.error(`\n getDepartments encountered an unexpected error: ${error}`);
+            }
+            throw new Error //either keep this, or figure out data validation for empty array.
+        }
+    }
+
     //TODO: consider making special error-handling method to avoid repitition. 
 
     //This method constructs queries to view all of the elements related to the provided table
     buildViewAllQuery(tableName: string): string{
-        console.log('RUNNING buildViewAllQuery');
-        console.log(`this.sqlStatement =  ${this.sqlStatement}`);
-        console.log(`table name passed in = ${tableName}`);
+        //console.log('RUNNING buildViewAllQuery');
+        //console.log(`this.sqlStatement =  ${this.sqlStatement}`);
+        //console.log(`table name passed in = ${tableName}`);
         try{
             switch(tableName){
                 case 'department':
@@ -75,7 +106,7 @@ class Query{
                 default:
                     throw new Error(`unable to build a query for the table "${tableName}".`);               
             };
-            console.log(`RETURNING ${this.sqlStatement}`);
+            //console.log(`RETURNING ${this.sqlStatement}`);
             return this.sqlStatement;
 
         }catch(error){
@@ -91,8 +122,8 @@ class Query{
     //When given a valid SQL statement (meaning this.sqlStatement is truthy), this method queries the database and calls the method to render the table
     //I isolated this from the code that builds the SQL statement, because (unlike that code), this code remains the same for every view all query
     async renderViewAllQuery(){
-        console.log('RUNNING renderViewAllQuery');
-        console.log(`this.sqlStatement =  ${this.sqlStatement}`);
+        //console.log('RUNNING renderViewAllQuery');
+        //console.log(`this.sqlStatement =  ${this.sqlStatement}`);
         try{
             //ensure sqlStatement property has a truthy value.
             if(this.sqlStatement){
@@ -113,8 +144,8 @@ class Query{
 
         //TODO: figure out how to modify this to preventSQL injections, there is a possiblility that the pool statement will handle this.
     async addDepartment(departmentName: string){
-        console.log('RUNNING addDepartment');
-        console.log(`Department name passed in = ${departmentName}`);
+        //console.log('RUNNING addDepartment');
+        //console.log(`Department name passed in = ${departmentName}`);
     
         try{
             /*I'm converting departmentName to lowerCase and comparing it to existing department names (converted to lowercase using the database
@@ -126,7 +157,7 @@ class Query{
             const checkQuery = `SELECT COUNT(*) FROM department WHERE LOWER(name) = $1`;
             const checkResult = await pool.query(checkQuery, [lowerCaseDepName]);
                 
-            console.log(`checkResult = ${JSON.stringify(checkResult.rows)}`);
+            //console.log(`checkResult = ${JSON.stringify(checkResult.rows)}`);
             //check if a record was returned from the previous query
             if(parseInt(checkResult.rows[0].count) > 0){
                 //I considered making this an error, but it isn't really an error that the app needs to know about.
@@ -147,7 +178,7 @@ class Query{
     }
 
     async outputTable(result: QueryResult){
-        console.log("RUNNING outputTable method");
+        //console.log("RUNNING outputTable method");
         try{
             //ensure result.rowCount is truthy
             if(result.rowCount){

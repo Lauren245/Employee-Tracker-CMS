@@ -8,6 +8,9 @@ async function runPrompts() {
     await connectToDB();
     do {
         try {
+            //create an array of department names to store in case the user wants to add a role
+            // const departmentsArr = JSON.stringify(await Query.getDepartments());
+            const departmentsArr: string[] = await Query.getDepartments();
             // Defining a const here so I can use await for queries
             const answers = await inquirer.prompt([
                 {
@@ -30,6 +33,25 @@ async function runPrompts() {
                     name: 'departmentName',
                     message: 'Please enter a name for the new department',
                     when: (answers) => answers.actions === 'add a department'
+                },
+                {
+                    type: 'input',
+                    name: 'roleName',
+                    message: 'Please enter the name of the role that you wish to add.',
+                    when: (answers) => answers.actions === 'add a role'
+                },
+                {
+                    type: 'number',
+                    name: 'roleSalary',
+                    message: 'Please enter the salary for this role.',
+                    when: (answers) => answers.roleName != undefined
+                },
+                {
+                    type: 'list',
+                    name: 'selectDepartment',
+                    message: 'Which department does this new role belong to?',
+                    choices: departmentsArr,
+                    when: (answers) => answers.roleSalary != undefined
                 }
             ]);
             //TODO: figure out a way to handle falsey values in if statement checks inside the switch statement
@@ -58,6 +80,13 @@ async function runPrompts() {
                     //check that departmentName is truthy 
                     if(answers.departmentName){
                         await Query.addDepartment(answers.departmentName);
+                    }
+                    break;
+                case 'add a role':
+                    //check that selectDepartment is truthy
+                    //just checking selectDepartment because it is the last in a series of prompts
+                    if(answers.selectDepartment){
+                        //await Query.getDepartments();
                     }
                     break;
                 case 'exit':
