@@ -51,6 +51,18 @@ async function runPrompts() {
                     message: 'Which department does this new role belong to?',
                     choices: departmentsArr,
                     when: (answers) => answers.roleSalary != undefined
+                },
+                {
+                    type: 'input',
+                    name: 'fName',
+                    message: 'Please enter the first name of the employee',
+                    when: (answers) => answers.actions === 'add an employee'
+                },
+                {
+                    type: 'input',
+                    name: 'lName',
+                    message: 'Please enter the first name of the employee',
+                    when: (answers) => answers.fName != undefined
                 }
             ]);
             //TODO: figure out a way to handle falsey values in if statement checks inside the switch statement

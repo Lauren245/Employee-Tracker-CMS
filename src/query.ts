@@ -24,7 +24,7 @@ class Query{
     constructor(){
         console.log("inside query constructor");
     }
-
+    //GETTERS 
     async getDepartments(): Promise<string[]>{
         //console.log("RUNNING getDepartments");
         try{
@@ -55,6 +55,66 @@ class Query{
         }
     }
 
+        /*this method gets the id for a role based on the combination of role title and department names.
+     this is needed becasue mulitple departments can have a role with the same name, but department
+     can't have multiple roles with the same name.*/
+     async getRoleId(roleName: number, departmentName: string): Promise<number>{
+        console.log('RUNNING getRoleId');
+        try{
+            const departmentIdQuery = 
+                `SELECT id
+                FROM department
+                WHERE name = $1;`;
+
+            const departmentIdResult = await pool.query(departmentIdQuery, [departmentName]);
+            console.log(`departmentIdResult.rows = ${departmentIdResult.rows}`);
+
+            //convert to number
+            const departmentId = parseInt(departmentIdResult.rows[0].id);
+            console.log(`departmentId = ${departmentId}`);
+
+            const roleIdQuery = 
+                `SELECT id
+                FROM role 
+                WHERE department_id = $1 AND title = $2;`;
+            const roleIdResult = await pool.query(roleIdQuery, [departmentId, roleName]);
+
+            //convert to number
+            const roleId = parseInt(roleIdResult.rows[0].id);
+            console.log(`roleId = ${roleId}`);
+
+            return roleId;
+
+        }catch(error){
+            console.error(`getRoleId has encountered an unexpected error: ${error}`);
+            return -1;
+        }
+    }
+
+    async getManagerId(managerName: string): Promise<number>{
+        console.log('RUNNING getManagerId')
+        try{
+            const managerIdQuery = 
+            `SELECT id
+             FROM employee 
+             WHERE CONCAT('first_name, ' ', last_name) = $1
+             LIMIT 1;
+            `;
+
+            const managerIdResult = await pool.query(managerIdQuery, [managerName]);
+            //convert to number
+            const managerId = parseInt(managerIdResult.rows[0].id);
+            console.log(`managerId = ${managerId}`);
+
+            return managerId;
+
+
+        }catch(error){
+            console.error(`\n getManagerId encountered unexpected error: ${error}`);
+            return -1;
+        }
+            
+    }
     //TODO: consider making special error-handling method to avoid repitition. 
 
     //This method constructs queries to view all of the elements related to the provided table
@@ -175,6 +235,26 @@ class Query{
             console.error(`\n addDepartment encountered an unexpected error. ${error}`);
         }
     }
+
+
+    //employee's first name, last name, role, and manager, and that employee is added to the database
+    async addEmployee(firstName: string, lastName: string, roleId: number,  managerName: string){
+        try{
+            const managerId = await this.getManagerId(managerName);
+
+            this.sqlStatement = 
+                `INSERT INTO employee (first_name, last_name, role_id, manager_id)
+                 VALUES($1, $2, $3, $4)`;
+            
+            await pool.query(this.sqlStatement, [firstName, lastName, roleId, managerId]);
+            console.log(`Employee "${firstName} ${lastName}" was added successfully!`);
+
+        }catch(error){
+            console.error(`\n addEmployee encoutered an unexpected error: ${error}`);
+        }
+
+    }
+
 
     async addRole(roleName: string, salary: number, departmentName: string){
         console.log("RUNNING addRole method");
