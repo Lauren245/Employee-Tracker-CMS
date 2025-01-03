@@ -1,5 +1,5 @@
 import inquirer from "inquirer";
-import { connectToDB } from "./connection.js";
+import { connectToDB, disconnectDB } from "./connection.js";
 import Query from "./query.js";
 
 async function runPrompts() {
@@ -7,7 +7,9 @@ async function runPrompts() {
     let exit: boolean = false;
     await connectToDB();
     //create an array of department names to store in case the user wants to add a role
+    //!!! I think I may change this to be better match how I'm handling getDepartmentRoles
     let departmentsArr: string[] = await Query.getDepartments();
+    
     do {
         try {
             // Defining a const here so I can use await for queries
@@ -61,8 +63,56 @@ async function runPrompts() {
                 {
                     type: 'input',
                     name: 'lName',
-                    message: 'Please enter the first name of the employee',
+                    message: 'Please enter the last name of the employee',
                     when: (answers) => answers.fName != undefined
+                },
+                {
+                    type: 'list',
+                    name: 'empDepartment',
+                    message: 'which department will this employee work in?',
+                    choices: departmentsArr,
+                    when: (answers) => answers.lName != undefined
+                },
+                {
+                    type: 'list',
+                    name: 'empRole',
+                    message: 'assign a role for the employee',
+                    choices: async (answers) => {
+                        //TODO: try to find more graceful way to do this.
+                        if (answers.empDepartment) {
+                            return await Query.getDepartmentRoles(answers.empDepartment);
+                        }
+                        return [];
+                        // if (answers.empDepartment) {
+                        //     try {
+                        //         const roles = await Query.getDepartmentRoles(answers.empDepartment);
+                        //         return roles.length > 0 ? roles : ['No roles available for this department'];
+                        //     } catch (error) {
+                        //         console.error('Error fetching roles:', error);
+                        //         return ['Error fetching roles, please try again'];
+                        //     }
+                        // }
+                        // return ['No department selected'];
+                    },
+                    when: (answers) => !!answers.empDepartment
+                },
+                {
+                    type: 'confirm',
+                    name: 'includeManager',
+                    message: 'Do you want to add a manager for this employee?',
+                    when: (answers) => !!answers.empRole //check if this works with empty arrays
+                },
+                {
+                    type: 'input',
+                    name: 'managerFName',
+                    message: `Please enter the manager's first name`,
+                    when: (answers) => answers.includeManager === true
+                },
+                {
+                    type: 'input',
+                    name: 'managerLName',
+                    message: `Please enter the manager's last name`,
+                    when: (answers) => answers.managerFName != undefined
                 }
             ]);
             //TODO: figure out a way to handle falsey values in if statement checks inside the switch statement
@@ -102,10 +152,23 @@ async function runPrompts() {
                         await Query.addRole(answers.roleName, answers.roleSalary, answers.selectDepartment);
                     }
                     break;
+                case 'add an employee':
+                    // check that empRole did not return an empty array
+                    // only checking empRole because it is the last required item in a series of prompts
+                    if (answers.empRole.length != 0) {
+                        if (answers.managerFName && answers.managerLName) {
+                            await Query.addEmployee(answers.fName, answers.lName, answers.empDepartment, answers.empRole, answers.managerFName, answers.managerLName);
+                        } else {
+                            await Query.addEmployee(answers.fName, answers.lName, answers.empDepartment, answers.empRole);
+                        }
+                    }
+                    break;
                 case 'exit':
                     exit = true;
                     //terminate the node.js app successfully
                     //this will be in the place of a break statement
+                    //TODO: add pool.end
+                    await disconnectDB();
                     process.exit(0);
                 default:
                     throw new Error(`Unable to process the requested query.`);

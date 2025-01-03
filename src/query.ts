@@ -26,7 +26,7 @@ class Query{
     }
     //GETTERS 
     async getDepartments(): Promise<string[]>{
-        //console.log("RUNNING getDepartments");
+        console.log("RUNNING getDepartments");
         try{
             this.sqlStatement = 
                 `SELECT name
@@ -51,14 +51,51 @@ class Query{
             }else{
                 console.error(`\n getDepartments encountered an unexpected error: ${error}`);
             }
+            //TODO: change this to empty array
             throw new Error //either keep this, or figure out data validation for empty array.
+        }
+    }
+
+    async getDepartmentRoles(departmentName: string): Promise<string[]>{
+        console.log("RUNNING getDepartmentRoles");
+        try{
+            //get the department ID based off its name
+            const departmentId = await this.getDepartmentId(departmentName);
+
+            //get the roles from the role table where the departmentId matches
+            this.sqlStatement = 
+                `SELECT title
+                 FROM role
+                 WHERE department_id = $1;`;
+
+            const result: QueryResult = await pool.query(this.sqlStatement, [departmentId]);
+            const resultArr: string[] = []
+
+            if(result.rowCount){
+                //??? change to result.rows.map?
+                for(let i = 0; i < result.rowCount; i++){
+                    resultArr.push((Object.values(result.rows[i]).toString()));
+                }
+
+                return resultArr;
+            }
+            //code will only reach this point if nothing is returned from the DB query.
+            throw new Error(`unable to get roles from department "${departmentName}" from the database.`);
+
+        }catch(error){
+            if(error instanceof Error){
+                console.error(`\n getDepartmentRoles encountered error: ${error.stack}`);
+            }else{
+                console.error(`\n getDepartmentRoles encountered an unexpected error: ${error}`);
+            }
+            return [];
         }
     }
 
         /*this method gets the id for a role based on the combination of role title and department names.
      this is needed becasue mulitple departments can have a role with the same name, but department
      can't have multiple roles with the same name.*/
-     async getRoleId(roleName: number, departmentName: string): Promise<number>{
+     async getRoleId(roleName: string, departmentName: string): Promise<number>{
         console.log('RUNNING getRoleId');
         try{
             const departmentIdQuery = 
@@ -67,11 +104,11 @@ class Query{
                 WHERE name = $1;`;
 
             const departmentIdResult = await pool.query(departmentIdQuery, [departmentName]);
-            console.log(`departmentIdResult.rows = ${departmentIdResult.rows}`);
+            //console.log(`departmentIdResult.rows = ${departmentIdResult.rows}`);
 
             //convert to number
             const departmentId = parseInt(departmentIdResult.rows[0].id);
-            console.log(`departmentId = ${departmentId}`);
+            //console.log(`departmentId = ${departmentId}`);
 
             const roleIdQuery = 
                 `SELECT id
@@ -81,7 +118,7 @@ class Query{
 
             //convert to number
             const roleId = parseInt(roleIdResult.rows[0].id);
-            console.log(`roleId = ${roleId}`);
+            //console.log(`roleId = ${roleId}`);
 
             return roleId;
 
@@ -91,20 +128,27 @@ class Query{
         }
     }
 
-    async getManagerId(managerName: string): Promise<number>{
+    //TODO: fix manager id 
+    async getManagerId(managerFName: string, managerLName: string): Promise<number>{
         console.log('RUNNING getManagerId')
         try{
+            //console.log(`managerFName passed in = ${managerFName}`);
+            //console.log(`managerLName passed in = ${managerLName}`);
+
+            //TODO: sanatize the input 
+
             const managerIdQuery = 
             `SELECT id
              FROM employee 
-             WHERE CONCAT('first_name, ' ', last_name) = $1
+             WHERE first_name = $1 AND last_name = $2
              LIMIT 1;
             `;
 
-            const managerIdResult = await pool.query(managerIdQuery, [managerName]);
+            const managerIdResult = await pool.query(managerIdQuery, [managerFName, managerLName]);
+
             //convert to number
             const managerId = parseInt(managerIdResult.rows[0].id);
-            console.log(`managerId = ${managerId}`);
+            //console.log(`managerId = ${managerId}`);
 
             return managerId;
 
@@ -115,11 +159,34 @@ class Query{
         }
             
     }
+
+    async getDepartmentId(departmentName: string): Promise<number>{
+        console.log('RUNNING getDepartmentId');
+        try{
+            const departmentIdQuery =
+                `SELECT id 
+                 FROM department
+                 WHERE name = $1;`;
+
+            const departmentIdResult = await pool.query(departmentIdQuery, [departmentName]);
+
+            //convert to number
+            const departmentId = parseInt(departmentIdResult.rows[0].id);
+            //console.log(`departmentId = ${departmentId}`);
+
+            return departmentId;
+            
+        }catch(error){
+            console.error(`\n getDepartmentId encountered unexpected error: ${error}`);
+            return -1;
+        }
+    }
     //TODO: consider making special error-handling method to avoid repitition. 
 
     //This method constructs queries to view all of the elements related to the provided table
+    //TODO: I think this should probably be async
     buildViewAllQuery(tableName: string): string{
-        //console.log('RUNNING buildViewAllQuery');
+        console.log('RUNNING buildViewAllQuery');
         //console.log(`this.sqlStatement =  ${this.sqlStatement}`);
         //console.log(`table name passed in = ${tableName}`);
         try{
@@ -181,7 +248,7 @@ class Query{
     //When given a valid SQL statement (meaning this.sqlStatement is truthy), this method queries the database and calls the method to render the table
     //I isolated this from the code that builds the SQL statement, because (unlike that code), this code remains the same for every view all query
     async renderViewAllQuery(){
-        //console.log('RUNNING renderViewAllQuery');
+        console.log('RUNNING renderViewAllQuery');
         //console.log(`this.sqlStatement =  ${this.sqlStatement}`);
         try{
             //ensure sqlStatement property has a truthy value.
@@ -203,7 +270,7 @@ class Query{
 
         //TODO: figure out how to modify this to preventSQL injections, there is a possiblility that the pool statement will handle this.
     async addDepartment(departmentName: string){
-        //console.log('RUNNING addDepartment');
+        console.log('RUNNING addDepartment');
         //console.log(`Department name passed in = ${departmentName}`);
     
         try{
@@ -236,18 +303,31 @@ class Query{
         }
     }
 
-
+    //TODO: update this so it can deal with manager first and last name.
     //employee's first name, last name, role, and manager, and that employee is added to the database
-    async addEmployee(firstName: string, lastName: string, roleId: number,  managerName: string){
+    async addEmployee(firstName: string, lastName: string, departmentName: string, roleName: string,  managerFName?: string, managerLName?: string){
+        console.log('RUNNING addEmployee');
         try{
-            const managerId = await this.getManagerId(managerName);
+                //get the id for role using their names
+                const roleId = await this.getRoleId(roleName, departmentName);              
 
-            this.sqlStatement = 
-                `INSERT INTO employee (first_name, last_name, role_id, manager_id)
-                 VALUES($1, $2, $3, $4)`;
-            
-            await pool.query(this.sqlStatement, [firstName, lastName, roleId, managerId]);
+            //having a manager is not required so different actions must be taken if no manager is entered.
+            if(managerFName && managerLName){
+                this.sqlStatement = 
+                  `INSERT INTO employee (first_name, last_name, role_id, manager_id)
+                   VALUES($1, $2, $3, $4)`;
+                //get the id for manager using their name
+                const managerId = await this.getManagerId(managerFName, managerLName);
+                await pool.query(this.sqlStatement, [firstName, lastName, roleId, managerId]);
+            }else{
+                this.sqlStatement = 
+                  `INSERT INTO employee (first_name, last_name, role_id)
+                   VALUES($1, $2, $3)`;
+                await pool.query(this.sqlStatement, [firstName, lastName, roleId]);
+            }
+
             console.log(`Employee "${firstName} ${lastName}" was added successfully!`);
+
 
         }catch(error){
             console.error(`\n addEmployee encoutered an unexpected error: ${error}`);
@@ -302,7 +382,7 @@ class Query{
     }
 
     async outputTable(result: QueryResult){
-        //console.log("RUNNING outputTable method");
+        console.log("RUNNING outputTable method");
         try{
             //ensure result.rowCount is truthy
             if(result.rowCount){
