@@ -55,7 +55,7 @@ class Query{
             throw new Error //either keep this, or figure out data validation for empty array.
         }
     }
-
+    //TODO: add code that better handles a department not having roles
     async getDepartmentRoles(departmentName: string): Promise<string[]>{
         console.log("RUNNING getDepartmentRoles");
         try{
@@ -72,7 +72,7 @@ class Query{
             const resultArr: string[] = []
 
             if(result.rowCount){
-                //??? change to result.rows.map?
+                //TODO: ??? change to result.rows.map?
                 for(let i = 0; i < result.rowCount; i++){
                     resultArr.push((Object.values(result.rows[i]).toString()));
                 }
@@ -87,6 +87,33 @@ class Query{
                 console.error(`\n getDepartmentRoles encountered error: ${error.stack}`);
             }else{
                 console.error(`\n getDepartmentRoles encountered an unexpected error: ${error}`);
+            }
+            return [];
+        }
+    }
+
+    async getEmployees(): Promise<string[]>{
+        try{
+            this.sqlStatement = 
+                `SELECT id, first_name, last_name
+                 FROM employee;`;
+
+            const result: QueryResult = await pool.query(this.sqlStatement);
+            //const resultsArr: string[] = [];
+
+            if(result.rowCount){
+                const resultsArr: string[] = result.rows.map(row => Object.values(row).toString().replace(/,/g, ' '));
+                console.log(`resultsArr = ${JSON.stringify(resultsArr)}`);
+                return resultsArr;
+            }
+
+            throw new Error('unable to get employees from the database.');
+
+        }catch(error){
+            if(error instanceof Error){
+                console.error(`\n getEmployees encountered error: ${error.stack}`);
+            }else{
+                console.error(`\n getEmployees encountered an unexpected error: ${error}`);
             }
             return [];
         }
@@ -302,8 +329,7 @@ class Query{
             console.error(`\n addDepartment encountered an unexpected error. ${error}`);
         }
     }
-
-    //TODO: update this so it can deal with manager first and last name.
+    //TODO ensure there are no leading or trailing spaces on the names.
     //employee's first name, last name, role, and manager, and that employee is added to the database
     async addEmployee(firstName: string, lastName: string, departmentName: string, roleName: string,  managerFName?: string, managerLName?: string){
         console.log('RUNNING addEmployee');
@@ -379,6 +405,32 @@ class Query{
             console.error(`\n addRole encountered an unexpected error. ${error}`);
         }
        
+    }
+
+    async updateEmployeeRole(employeeInfo: string, newDepartmentName: string, newRoleName: string){
+        console.log(`RUNNING updateEmployeeRole`);
+        console.log(`value passed in = ${JSON.stringify(employeeInfo)}, ${newDepartmentName}, ${newRoleName}`);
+        try{
+            const split = employeeInfo.split(' ');
+            //get the content after the last , 
+            const employeeId = split[0].trim();
+            console.log(`EMPLOYEE id = ${employeeId}`);
+
+            //get the roleId
+            const roleId = await this.getRoleId(newRoleName, newDepartmentName);
+            console.log(`roleId = ${roleId}`); 
+
+            this.sqlStatement = 
+                `UPDATE employee
+                 SET role_id = $1
+                 WHERE id = $2;`;
+
+            await pool.query(this.sqlStatement, [roleId, employeeId]);
+            console.log(`Employee's role changed to ${newRoleName} successfully!`);
+
+        }catch(error){
+            console.error(`\n updateEmployeeRole encountered an unexpected error. ${error}`);
+        }
     }
 
     async outputTable(result: QueryResult){

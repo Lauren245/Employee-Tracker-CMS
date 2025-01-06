@@ -9,6 +9,7 @@ async function runPrompts() {
     //create an array of department names to store in case the user wants to add a role
     //!!! I think I may change this to be better match how I'm handling getDepartmentRoles
     let departmentsArr: string[] = await Query.getDepartments();
+    let employeeArr = await Query.getEmployees();
     
     do {
         try {
@@ -113,6 +114,33 @@ async function runPrompts() {
                     name: 'managerLName',
                     message: `Please enter the manager's last name`,
                     when: (answers) => answers.managerFName != undefined
+                },
+                {
+                    type: 'list',
+                    name: 'employee',
+                    message: `Which employee's role do you want to update?`,
+                    choices: employeeArr,
+                    when: (answers) => answers.actions === 'update an employee role'
+                },
+                {
+                    type: 'list',
+                    name: 'department',
+                    message: 'Which department does their new role belong to?',
+                    choices: departmentsArr,
+                    when: (answers) => !!answers.employee
+                },
+                {
+                    type: 'list',
+                    name: 'departmentRoles',
+                    message: `Please select the employee's new role`,
+                    choices: async (answers) => {
+                        //TODO: try to find more graceful way to do this.
+                        if (answers.department) {
+                            return await Query.getDepartmentRoles(answers.department);
+                        }
+                        return [];
+                    },
+                    when: (answers) => !!answers.department
                 }
             ]);
             //TODO: figure out a way to handle falsey values in if statement checks inside the switch statement
@@ -161,7 +189,13 @@ async function runPrompts() {
                         } else {
                             await Query.addEmployee(answers.fName, answers.lName, answers.empDepartment, answers.empRole);
                         }
+                        //update employees array
+                         employeeArr = await Query.getEmployees();
                     }
+                    break;
+                case 'update an employee role':
+                    //TODO: add if statement
+                    await Query.updateEmployeeRole(answers.employee, answers.department, answers.departmentRoles);
                     break;
                 case 'exit':
                     exit = true;
