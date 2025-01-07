@@ -63,6 +63,8 @@ You should now be able to use the Employee-Tracker-CMS application to manage you
 
 - **View All Employees**: Select this option to view a list of all employees, including their roles, departments, salaries, and managers.
 
+- **View Employees by Department**: Select this option, and a department name, to view a list of all the employees within the specified department.
+
 3. **Add Data**:
 - **Add a Department**: Select this option to add a new department. You will be prompted to enter the name of the department.
 
@@ -132,7 +134,7 @@ Postgres documentation reference for pooling.
 
 **Image of the main menu of the application running in the command line.**
 
-![A screenshot of a VS Code workspace showing a project directory and terminal output. After running the npm start command, the program compiles (tsc) and presents a menu with options such as "view all departments," "view all roles," "view all employees," "add a department," "add a role," "add an employee," and "update an employee role." The user is prompted to select an option using arrow keys.](./resources/screenshots/Employee-CMS-Main-Menu.jpg)
+![A screenshot of a VS Code workspace showing a project directory and terminal output. After running the npm start command, the program compiles (tsc) and presents a menu with options such as "view all departments," "view all roles," "view all employees," "view employees by department," "add a department," "add a role," "add an employee," and "update an employee role." The user is prompted to select an option using arrow keys.](./resources/screenshots/Employee-CMS-Main-Menu.jpg)
 
 **Image showing the table results from the view all employees prompt.**
 
