@@ -191,38 +191,6 @@ class Query{
         }
     }
 
-    //TODO: fix manager id 
-    async getManagerId(managerFName: string, managerLName: string): Promise<number>{
-        console.log('RUNNING getManagerId')
-        try{
-            //console.log(`managerFName passed in = ${managerFName}`);
-            //console.log(`managerLName passed in = ${managerLName}`);
-
-            //TODO: sanatize the input 
-
-            const managerIdQuery = 
-            `SELECT id
-             FROM employee 
-             WHERE first_name = $1 AND last_name = $2
-             LIMIT 1;
-            `;
-
-            const managerIdResult = await pool.query(managerIdQuery, [managerFName, managerLName]);
-
-            //convert to number
-            const managerId = parseInt(managerIdResult.rows[0].id);
-            //console.log(`managerId = ${managerId}`);
-
-            return managerId;
-
-
-        }catch(error){
-            console.error(`\n getManagerId encountered unexpected error: ${error}`);
-            return -1;
-        }
-            
-    }
-
     async getDepartmentId(departmentName: string): Promise<number>{
         console.log('RUNNING getDepartmentId');
         try{
