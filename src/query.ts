@@ -449,7 +449,7 @@ class Query{
             const departementId = await this.getDepartmentId(departmentName);
             //console.log(`departmentID = ${departementId}`);
             this.sqlStatement =
-                `SELECT emp.id, emp.first_name, emp.last_name
+                `SELECT emp.id, emp.first_name, emp.last_name, rol.title
                 FROM employee emp 
                     JOIN role rol 
                         ON emp.role_id = rol.id

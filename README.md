@@ -63,7 +63,7 @@ You should now be able to use the Employee-Tracker-CMS application to manage you
 
 - **View All Employees**: Select this option to view a list of all employees, including their roles, departments, salaries, and managers.
 
-- **View Employees by Department**: Select this option, and a department name, to view a list of all the employees within the specified department.
+- **View Employees by Department**: Select this option, and a department name, to view a list of all the employees within the specified department, including their ids, names, and job titles.
 
 3. **Add Data**:
 - **Add a Department**: Select this option to add a new department. You will be prompted to enter the name of the department.
