@@ -23,6 +23,7 @@ async function runPrompts() {
                         'view all departments', 
                         'view all roles', 
                         'view all employees', 
+                        'view employees by department',
                         'add a department', 
                         'add a role', 
                         'add an employee',
@@ -134,7 +135,15 @@ async function runPrompts() {
                         return [];
                     },
                     when: (answers) => !!answers.department
+                },
+                {
+                    type: 'list',
+                    name: 'employeebyDepartment',
+                    message: 'Which department would you like to see the employees of?',
+                    choices: departmentsArr,
+                    when: (answers) => answers.actions === 'view employees by department'
                 }
+
             ]);
             //TODO: figure out a way to handle falsey values in if statement checks inside the switch statement
             let sqlStatement = '';
@@ -157,6 +166,9 @@ async function runPrompts() {
                         await Query.renderViewAllQuery();
                     }
                     break;
+                case 'view employees by department':
+                        await Query.viewEmployeesByDepartment(answers.employeebyDepartment);
+                        break;
                 case 'add a department':
                     //check that departmentName is truthy 
                     if(answers.departmentName){

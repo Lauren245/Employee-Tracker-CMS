@@ -57,7 +57,7 @@ class Query{
     }
     //TODO: add code that better handles a department not having roles
     async getDepartmentRoles(departmentName: string): Promise<string[]>{
-        console.log("RUNNING getDepartmentRoles");
+        //console.log("RUNNING getDepartmentRoles");
         try{
             //get the department ID based off its name
             const departmentId = await this.getDepartmentId(departmentName);
@@ -102,7 +102,7 @@ class Query{
 
             if(result.rowCount){
                 const resultsArr: string[] = result.rows.map(row => Object.values(row).toString().replace(/,/g, ' '));
-                console.log(`resultsArr = ${JSON.stringify(resultsArr)}`);
+                //console.log(`resultsArr = ${JSON.stringify(resultsArr)}`);
                 return resultsArr;
             }
 
@@ -124,7 +124,7 @@ class Query{
         // console.log(`departmentName passed in = ${departmentName}`);
         try{
             const departementId = await this.getDepartmentId(departmentName);
-            console.log(`departmentID = ${departementId}`);
+            //console.log(`departmentID = ${departementId}`);
             this.sqlStatement =
                 `SELECT emp.id, emp.first_name, emp.last_name
                 FROM employee emp 
@@ -137,7 +137,7 @@ class Query{
 
             if(result.rowCount){
                 const resultsArr: string[] = result.rows.map(row => Object.values(row).toString().replace(/,/g, ' '));
-                console.log(`resultsArr = ${JSON.stringify(resultsArr)}`);
+                //console.log(`resultsArr = ${JSON.stringify(resultsArr)}`);
                 return resultsArr;
             }
 
@@ -153,6 +153,7 @@ class Query{
             return [];
         }
     }
+
 
         /*this method gets the id for a role based on the combination of role title and department names.
      this is needed becasue mulitple departments can have a role with the same name, but department
@@ -341,12 +342,12 @@ class Query{
 
             //having a manager is not required so different actions must be taken if no manager is entered.
             if(managerInfo){
-                console.log('inside managerInfo if statement');
-                console.log(`values passed in for managerInfo = ${JSON.stringify(managerInfo)}`);
+                //console.log('inside managerInfo if statement');
+                //console.log(`values passed in for managerInfo = ${JSON.stringify(managerInfo)}`);
                 const split = managerInfo.split(' ');
                 //get the content after the last , 
                 const managerId = split[0].trim();
-                console.log(`MANAGER id = ${managerId}`);
+                //console.log(`MANAGER id = ${managerId}`);
                 this.sqlStatement = 
                   `INSERT INTO employee (first_name, last_name, role_id, manager_id)
                    VALUES($1, $2, $3, $4)`;
@@ -437,6 +438,40 @@ class Query{
 
         }catch(error){
             console.error(`\n updateEmployeeRole encountered an unexpected error. ${error}`);
+        }
+    }
+
+       //this will be used for the manager selection list when adding a new employee to the DB. This ensures that only managers from the given departement are selected.
+       async viewEmployeesByDepartment(departmentName: string){
+        // console.log('RUNNING viewEmployeesByDepartment');
+        // console.log(`departmentName passed in = ${departmentName}`);
+        try{
+            const departementId = await this.getDepartmentId(departmentName);
+            //console.log(`departmentID = ${departementId}`);
+            this.sqlStatement =
+                `SELECT emp.id, emp.first_name, emp.last_name
+                FROM employee emp 
+                    JOIN role rol 
+                        ON emp.role_id = rol.id
+                JOIN department dep 
+                    ON rol.department_id = dep.id
+                WHERE dep.id = $1; `;
+            const result: QueryResult = await pool.query(this.sqlStatement, [departementId]);
+
+            if(result.rowCount){
+                this.outputTable(result);
+            }
+            else{
+                throw new Error(`unable to get employees in the "${departmentName}" department from the database.`);
+            }
+
+        }catch(error){
+            if(error instanceof Error){
+                console.error(`\n viewEmployeesByDepartment encountered an error: ${error.stack}`);
+            }
+            else{
+                console.error(`\n viewEmployeesByDepartment encountered an unexpected error: ${error}`);
+            }
         }
     }
 
