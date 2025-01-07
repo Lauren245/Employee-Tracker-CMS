@@ -28,6 +28,8 @@
 ## Description
 Employee-Tracker-CMS is a command-line application designed to manage a company's employee database. This system allows users to view and manage departments, roles, and employees within an organization. The application provides a user-friendly interface to perform various operations such as viewing all departments, roles, and employees, adding new departments, roles, and employees, and updating employee roles. It leverages Node.js, Inquirer.js for interactive command-line prompts, and PostgreSQL for database management. This tool is ideal for HR departments or managers who need to keep track of employee information efficiently.
 
+The application meets all the acceptance criteria, but there are somethings I want to tweak in the future. These items have comments labeled TODO.
+
 ## Installation
 1. **Clone [the Repository](https://github.com/Lauren245/Employee-Tracker-CMS)**
 
