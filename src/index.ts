@@ -79,7 +79,6 @@ async function runPrompts() {
                     name: 'empRole',
                     message: 'assign a role for the employee',
                     choices: async (answers) => {
-                        //TODO: try to find more graceful way to do this.
                         let departmentRoles: string[] = [];
                         if (answers.empDepartment) {
                             departmentRoles = await Query.getDepartmentRoles(answers.empDepartment);
@@ -95,7 +94,7 @@ async function runPrompts() {
                     type: 'confirm',
                     name: 'includeManager',
                     message: 'Do you want to add a manager for this employee?',
-                    when: (answers) => !!answers.empRole //check if this works with empty arrays
+                    when: (answers) => !!answers.empRole 
                 },
                 {
                     type: 'list',
@@ -129,7 +128,6 @@ async function runPrompts() {
                     name: 'departmentRoles',
                     message: `Please select the employee's new role`,
                     choices: async (answers) => {
-                        //TODO: try to find more graceful way to do this.
                         if (answers.department) {
                             return await Query.getDepartmentRoles(answers.department);
                         }
@@ -139,7 +137,6 @@ async function runPrompts() {
                 }
             ]);
             //TODO: figure out a way to handle falsey values in if statement checks inside the switch statement
-            //console.log(`answers = ${JSON.stringify(answers)}`);
             let sqlStatement = '';
             switch (answers.actions) {
                 case 'view all departments':
@@ -179,7 +176,6 @@ async function runPrompts() {
                     // check that empRole did not return an empty array
                     // only checking empRole because it is the last required item in a series of prompts
                     if(answers.empRole.length > 0){
-                        console.log(`answers.includeManager = ${answers.includeManager}`);
                         if(answers.includeManager){
                             await Query.addEmployee(answers.fName, answers.lName, answers.empDepartment, answers.empRole, answers.selectManager);
                         }else {

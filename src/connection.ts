@@ -17,7 +17,7 @@ const connectToDB = async() => {
     try{
         const client = await pool.connect();
         client.release();
-        console.log("Connected to the database.");
+        //console.log("Connected to the database.");
     }catch(error){
         console.error(`Error connectiong to the database: ${error}`);
         process.exit(1);
@@ -27,7 +27,7 @@ const connectToDB = async() => {
 const disconnectDB = async () => {
     try{
         await pool.end();
-        console.log("Disconnected from the database.")
+        //console.log("Disconnected from the database.")
     }catch(error){
         console.error(`Error disconnecting from the database: ${error}`);
     }
