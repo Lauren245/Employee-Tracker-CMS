@@ -23,6 +23,7 @@ async function runPrompts() {
                         'view all departments', 
                         'view all roles', 
                         'view all employees', 
+                        'view employees by department',
                         'add a department', 
                         'add a role', 
                         'add an employee',
@@ -79,7 +80,6 @@ async function runPrompts() {
                     name: 'empRole',
                     message: 'assign a role for the employee',
                     choices: async (answers) => {
-                        //TODO: try to find more graceful way to do this.
                         let departmentRoles: string[] = [];
                         if (answers.empDepartment) {
                             departmentRoles = await Query.getDepartmentRoles(answers.empDepartment);
@@ -95,7 +95,7 @@ async function runPrompts() {
                     type: 'confirm',
                     name: 'includeManager',
                     message: 'Do you want to add a manager for this employee?',
-                    when: (answers) => !!answers.empRole //check if this works with empty arrays
+                    when: (answers) => !!answers.empRole 
                 },
                 {
                     type: 'list',
@@ -129,17 +129,23 @@ async function runPrompts() {
                     name: 'departmentRoles',
                     message: `Please select the employee's new role`,
                     choices: async (answers) => {
-                        //TODO: try to find more graceful way to do this.
                         if (answers.department) {
                             return await Query.getDepartmentRoles(answers.department);
                         }
                         return [];
                     },
                     when: (answers) => !!answers.department
+                },
+                {
+                    type: 'list',
+                    name: 'employeebyDepartment',
+                    message: 'Which department would you like to see the employees of?',
+                    choices: departmentsArr,
+                    when: (answers) => answers.actions === 'view employees by department'
                 }
+
             ]);
             //TODO: figure out a way to handle falsey values in if statement checks inside the switch statement
-            //console.log(`answers = ${JSON.stringify(answers)}`);
             let sqlStatement = '';
             switch (answers.actions) {
                 case 'view all departments':
@@ -160,6 +166,9 @@ async function runPrompts() {
                         await Query.renderViewAllQuery();
                     }
                     break;
+                case 'view employees by department':
+                        await Query.viewEmployeesByDepartment(answers.employeebyDepartment);
+                        break;
                 case 'add a department':
                     //check that departmentName is truthy 
                     if(answers.departmentName){
@@ -179,7 +188,6 @@ async function runPrompts() {
                     // check that empRole did not return an empty array
                     // only checking empRole because it is the last required item in a series of prompts
                     if(answers.empRole.length > 0){
-                        console.log(`answers.includeManager = ${answers.includeManager}`);
                         if(answers.includeManager){
                             await Query.addEmployee(answers.fName, answers.lName, answers.empDepartment, answers.empRole, answers.selectManager);
                         }else {

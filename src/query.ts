@@ -22,11 +22,11 @@ class Query{
     sqlStatement?: string
 
     constructor(){
-        console.log("inside query constructor");
+        //console.log("inside query constructor");
     }
     //GETTERS 
     async getDepartments(): Promise<string[]>{
-        console.log("RUNNING getDepartments");
+        //console.log("RUNNING getDepartments");
         try{
             this.sqlStatement = 
                 `SELECT name
@@ -57,7 +57,7 @@ class Query{
     }
     //TODO: add code that better handles a department not having roles
     async getDepartmentRoles(departmentName: string): Promise<string[]>{
-        console.log("RUNNING getDepartmentRoles");
+        //console.log("RUNNING getDepartmentRoles");
         try{
             //get the department ID based off its name
             const departmentId = await this.getDepartmentId(departmentName);
@@ -99,11 +99,10 @@ class Query{
                  FROM employee;`;
 
             const result: QueryResult = await pool.query(this.sqlStatement);
-            //const resultsArr: string[] = [];
 
             if(result.rowCount){
                 const resultsArr: string[] = result.rows.map(row => Object.values(row).toString().replace(/,/g, ' '));
-                console.log(`resultsArr = ${JSON.stringify(resultsArr)}`);
+                //console.log(`resultsArr = ${JSON.stringify(resultsArr)}`);
                 return resultsArr;
             }
 
@@ -121,11 +120,11 @@ class Query{
 
     //this will be used for the manager selection list when adding a new employee to the DB. This ensures that only managers from the given departement are selected.
     async getEmployeesByDepartment(departmentName: string): Promise<string []>{
-        console.log('RUNNING getEmployeesByDepartment');
-        console.log(`departmentName passed in = ${departmentName}`);
+        // console.log('RUNNING getEmployeesByDepartment');
+        // console.log(`departmentName passed in = ${departmentName}`);
         try{
             const departementId = await this.getDepartmentId(departmentName);
-            console.log(`departmentID = ${departementId}`);
+            //console.log(`departmentID = ${departementId}`);
             this.sqlStatement =
                 `SELECT emp.id, emp.first_name, emp.last_name
                 FROM employee emp 
@@ -138,7 +137,7 @@ class Query{
 
             if(result.rowCount){
                 const resultsArr: string[] = result.rows.map(row => Object.values(row).toString().replace(/,/g, ' '));
-                console.log(`resultsArr = ${JSON.stringify(resultsArr)}`);
+                //console.log(`resultsArr = ${JSON.stringify(resultsArr)}`);
                 return resultsArr;
             }
 
@@ -155,11 +154,12 @@ class Query{
         }
     }
 
+
         /*this method gets the id for a role based on the combination of role title and department names.
      this is needed becasue mulitple departments can have a role with the same name, but department
      can't have multiple roles with the same name.*/
      async getRoleId(roleName: string, departmentName: string): Promise<number>{
-        console.log('RUNNING getRoleId');
+        //console.log('RUNNING getRoleId');
         try{
             const departmentIdQuery = 
                 `SELECT id
@@ -192,7 +192,7 @@ class Query{
     }
 
     async getDepartmentId(departmentName: string): Promise<number>{
-        console.log('RUNNING getDepartmentId');
+        //console.log('RUNNING getDepartmentId');
         try{
             const departmentIdQuery =
                 `SELECT id 
@@ -217,7 +217,7 @@ class Query{
     //This method constructs queries to view all of the elements related to the provided table
     //TODO: I think this should probably be async
     buildViewAllQuery(tableName: string): string{
-        console.log('RUNNING buildViewAllQuery');
+        //console.log('RUNNING buildViewAllQuery');
         //console.log(`this.sqlStatement =  ${this.sqlStatement}`);
         //console.log(`table name passed in = ${tableName}`);
         try{
@@ -263,7 +263,6 @@ class Query{
                 default:
                     throw new Error(`unable to build a query for the table "${tableName}".`);               
             };
-            //console.log(`RETURNING ${this.sqlStatement}`);
             return this.sqlStatement;
 
         }catch(error){
@@ -279,7 +278,7 @@ class Query{
     //When given a valid SQL statement (meaning this.sqlStatement is truthy), this method queries the database and calls the method to render the table
     //I isolated this from the code that builds the SQL statement, because (unlike that code), this code remains the same for every view all query
     async renderViewAllQuery(){
-        console.log('RUNNING renderViewAllQuery');
+        //console.log('RUNNING renderViewAllQuery');
         //console.log(`this.sqlStatement =  ${this.sqlStatement}`);
         try{
             //ensure sqlStatement property has a truthy value.
@@ -301,7 +300,7 @@ class Query{
 
         //TODO: figure out how to modify this to preventSQL injections, there is a possiblility that the pool statement will handle this.
     async addDepartment(departmentName: string){
-        console.log('RUNNING addDepartment');
+        //console.log('RUNNING addDepartment');
         //console.log(`Department name passed in = ${departmentName}`);
     
         try{
@@ -336,19 +335,19 @@ class Query{
     //TODO ensure there are no leading or trailing spaces on the names.
     //employee's first name, last name, role, and manager, and that employee is added to the database
     async addEmployee(firstName: string, lastName: string, departmentName: string, roleName: string,  managerInfo?: string){
-        console.log('RUNNING addEmployee');
+        //console.log('RUNNING addEmployee');
         try{
                 //get the id for role using their names
                 const roleId = await this.getRoleId(roleName, departmentName);              
 
             //having a manager is not required so different actions must be taken if no manager is entered.
             if(managerInfo){
-                console.log('inside managerInfo if statement');
-                console.log(`values passed in for managerInfo = ${JSON.stringify(managerInfo)}`);
+                //console.log('inside managerInfo if statement');
+                //console.log(`values passed in for managerInfo = ${JSON.stringify(managerInfo)}`);
                 const split = managerInfo.split(' ');
                 //get the content after the last , 
                 const managerId = split[0].trim();
-                console.log(`MANAGER id = ${managerId}`);
+                //console.log(`MANAGER id = ${managerId}`);
                 this.sqlStatement = 
                   `INSERT INTO employee (first_name, last_name, role_id, manager_id)
                    VALUES($1, $2, $3, $4)`;
@@ -372,7 +371,7 @@ class Query{
     }
 
     async addRole(roleName: string, salary: number, departmentName: string){
-        console.log("RUNNING addRole method");
+        //console.log("RUNNING addRole method");
         try{
             //check if role is duplicate
             const lowerCaseRoleName = roleName.toLowerCase();
@@ -417,17 +416,17 @@ class Query{
     }
 
     async updateEmployeeRole(employeeInfo: string, newDepartmentName: string, newRoleName: string){
-        console.log(`RUNNING updateEmployeeRole`);
-        console.log(`value passed in = ${JSON.stringify(employeeInfo)}, ${newDepartmentName}, ${newRoleName}`);
+        //console.log(`RUNNING updateEmployeeRole`);
+        //console.log(`value passed in = ${JSON.stringify(employeeInfo)}, ${newDepartmentName}, ${newRoleName}`);
         try{
             const split = employeeInfo.split(' ');
             //get the content after the last , 
             const employeeId = split[0].trim();
-            console.log(`EMPLOYEE id = ${employeeId}`);
+            //console.log(`EMPLOYEE id = ${employeeId}`);
 
             //get the roleId
             const roleId = await this.getRoleId(newRoleName, newDepartmentName);
-            console.log(`roleId = ${roleId}`); 
+            //console.log(`roleId = ${roleId}`); 
 
             this.sqlStatement = 
                 `UPDATE employee
@@ -442,8 +441,42 @@ class Query{
         }
     }
 
+       //this will be used for the manager selection list when adding a new employee to the DB. This ensures that only managers from the given departement are selected.
+       async viewEmployeesByDepartment(departmentName: string){
+        // console.log('RUNNING viewEmployeesByDepartment');
+        // console.log(`departmentName passed in = ${departmentName}`);
+        try{
+            const departementId = await this.getDepartmentId(departmentName);
+            //console.log(`departmentID = ${departementId}`);
+            this.sqlStatement =
+                `SELECT emp.id, emp.first_name, emp.last_name, rol.title
+                FROM employee emp 
+                    JOIN role rol 
+                        ON emp.role_id = rol.id
+                JOIN department dep 
+                    ON rol.department_id = dep.id
+                WHERE dep.id = $1; `;
+            const result: QueryResult = await pool.query(this.sqlStatement, [departementId]);
+
+            if(result.rowCount){
+                this.outputTable(result);
+            }
+            else{
+                throw new Error(`unable to get employees in the "${departmentName}" department from the database.`);
+            }
+
+        }catch(error){
+            if(error instanceof Error){
+                console.error(`\n viewEmployeesByDepartment encountered an error: ${error.stack}`);
+            }
+            else{
+                console.error(`\n viewEmployeesByDepartment encountered an unexpected error: ${error}`);
+            }
+        }
+    }
+
     async outputTable(result: QueryResult){
-        console.log("RUNNING outputTable method");
+        //console.log("RUNNING outputTable method");
         try{
             //ensure result.rowCount is truthy
             if(result.rowCount){
