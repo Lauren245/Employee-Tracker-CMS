@@ -54,32 +54,32 @@ You should now be able to use the Employee-Tracker-CMS application to manage you
 
 ## Usage
 1. **Navigate the Command-Line Interface**: 
-- The application will present you with a series of interactive prompts. Use the arrow keys to navigate through the options and press ```Enter``` to select an option.
+    - The application will present you with a series of interactive prompts. Use the arrow keys to navigate through the options and press ```Enter``` to select an option.
+
 
 2. **View Data**: 
-- **View All Departments**: Select this option to view a list of all departments in the company.
+    - **View All Departments**: Select this option to view a list of all departments in the company.
 
-- **View All Roles**: select this option to view a list of all roles within the company, along with their associated departments and salaries.
+    - **View All Roles**: select this option to view a list of all roles within the company, along with their associated departments and salaries.
 
-- **View All Employees**: Select this option to view a list of all employees, including their roles, departments, salaries, and managers.
+    - **View All Employees**: Select this option to view a list of all employees, including their roles, departments, salaries, and managers.
 
-- **View Employees by Department**: Select this option, and a department name, to view a list of all the employees within the specified department, including their ids, names, and job titles.
+    - **View Employees by Department**: Select this option, and a department name, to view a list of all the employees within the specified department, including their ids, names, and job titles.
 
 3. **Add Data**:
-- **Add a Department**: Select this option to add a new department. You will be prompted to enter the name of the department.
+    - **Add a Department**: Select this option to add a new department. You will be prompted to enter the name of the department.
 
-- **Add a Role**: Select this option to add a new role. You will be prompted to enter the role name, salary, and the department to which the role belongs.
+    - **Add a Role**: Select this option to add a new role. You will be prompted to enter the role name, salary, and the department to which the role belongs.
 
-- **Add an Employee**: Select this option to add a new employee. You will be prompted to enter the employee's first name, last name, department, role, and optionally, their manager.
+    - **Add an Employee**: Select this option to add a new employee. You will be prompted to enter the employee's first name, last name, department, role, and optionally, their manager.
 
 4. **Update Data**:
-- **Update an Employee Role**: Select this option to update an employee's role. You will be prompted to select the employee, their new department, and their new role.
+    - **Update an Employee Role**: Select this option to update an employee's role. You will be prompted to select the employee, their new department, and their new role.
 
 5. **Exit the Application**: Select this option to exit the application. The database connection will be closed, and the application will terminate.
 
 ## Tests
 - There are no unit tests, but the application can be tested manually.
-
 
 ## License
 Copyright 2025 Lauren Moore
@@ -109,15 +109,11 @@ Postgres documentation reference for pooling.
 
 6. **[How to use Inquirer.js](https://javascript.plainenglish.io/how-to-inquirer-js-c10a4e05ef1f)** by Mat Wilmot on Medium: used for additional research on how to use Inquirer.js.
 
-7. [ChatGPT Table Formatting](https://chatgpt.com/share/676e37df-b380-8012-83d4-29b207640934)
+7. [ChatGPT Help with Async Await Bug Fix](https://chatgpt.com/share/676f5311-6e28-8012-b912-fe7942bcb977)
 
-8. [ChatGPT Help Fixing Table Bug](https://chatgpt.com/share/676e3ad2-3304-8012-999a-5e18662c386e)
+8. [ChatGPT Help With Table Formatting](https://chatgpt.com/share/676f5d3a-279c-8012-8528-486955d4b515)
 
-9. [ChatGPT Help with Async Await Bug Fix](https://chatgpt.com/share/676f5311-6e28-8012-b912-fe7942bcb977)
-
-10. [ChatGPT Help With Table Formatting](https://chatgpt.com/share/676f5d3a-279c-8012-8528-486955d4b515)
-
-11. [ChatGPT how to use the LOWER() function in SQL](https://chatgpt.com/share/676f7d34-db7c-8012-8207-339638419efc)
+9. [ChatGPT how to use the LOWER() function in SQL](https://chatgpt.com/share/676f7d34-db7c-8012-8207-339638419efc)
 
 ### 3rd-Party Software
 1.  **[Inquirer.js](https://github.com/SBoudrias/Inquirer.js)** Copyright (c) 2023 Simon Boudrias (twitter: [@vaxilart](https://twitter.com/Vaxilart)) - Licensed under the MIT license.
@@ -142,6 +138,7 @@ Postgres documentation reference for pooling.
 
 
 ## Video Demonstration
+ **[Link to demonstration video on Google Drive](https://drive.google.com/file/d/1iCmjnRVdJv8BsyRfpNkGC18CrDG4rWhC/view?usp=sharing)**
 
 
 **[Back to Top](#employee-tracker-cms)**
