@@ -119,6 +119,42 @@ class Query{
         }
     }
 
+    //this will be used for the manager selection list when adding a new employee to the DB. This ensures that only managers from the given departement are selected.
+    async getEmployeesByDepartment(departmentName: string): Promise<string []>{
+        console.log('RUNNING getEmployeesByDepartment');
+        console.log(`departmentName passed in = ${departmentName}`);
+        try{
+            const departementId = await this.getDepartmentId(departmentName);
+            console.log(`departmentID = ${departementId}`);
+            this.sqlStatement =
+                `SELECT emp.id, emp.first_name, emp.last_name
+                FROM employee emp 
+                    JOIN role rol 
+                        ON emp.role_id = rol.id
+                JOIN department dep 
+                    ON rol.department_id = dep.id
+                WHERE dep.id = $1; `;
+            const result: QueryResult = await pool.query(this.sqlStatement, [departementId]);
+
+            if(result.rowCount){
+                const resultsArr: string[] = result.rows.map(row => Object.values(row).toString().replace(/,/g, ' '));
+                console.log(`resultsArr = ${JSON.stringify(resultsArr)}`);
+                return resultsArr;
+            }
+
+            throw new Error(`unable to get employees in the "${departmentName}" department from the database.`);
+
+        }catch(error){
+            if(error instanceof Error){
+                console.error(`\n getEmployeesByDepartment encountered an error: ${error.stack}`);
+            }
+            else{
+                console.error(`\n getEmployeesByDepartment encountered an unexpected error: ${error}`);
+            }
+            return [];
+        }
+    }
+
         /*this method gets the id for a role based on the combination of role title and department names.
      this is needed becasue mulitple departments can have a role with the same name, but department
      can't have multiple roles with the same name.*/
@@ -331,19 +367,25 @@ class Query{
     }
     //TODO ensure there are no leading or trailing spaces on the names.
     //employee's first name, last name, role, and manager, and that employee is added to the database
-    async addEmployee(firstName: string, lastName: string, departmentName: string, roleName: string,  managerFName?: string, managerLName?: string){
+    async addEmployee(firstName: string, lastName: string, departmentName: string, roleName: string,  managerInfo?: string){
         console.log('RUNNING addEmployee');
         try{
                 //get the id for role using their names
                 const roleId = await this.getRoleId(roleName, departmentName);              
 
             //having a manager is not required so different actions must be taken if no manager is entered.
-            if(managerFName && managerLName){
+            if(managerInfo){
+                console.log('inside managerInfo if statement');
+                console.log(`values passed in for managerInfo = ${JSON.stringify(managerInfo)}`);
+                const split = managerInfo.split(' ');
+                //get the content after the last , 
+                const managerId = split[0].trim();
+                console.log(`MANAGER id = ${managerId}`);
                 this.sqlStatement = 
                   `INSERT INTO employee (first_name, last_name, role_id, manager_id)
                    VALUES($1, $2, $3, $4)`;
                 //get the id for manager using their name
-                const managerId = await this.getManagerId(managerFName, managerLName);
+                //const managerId = await this.getManagerId(managerFName, managerLName);
                 await pool.query(this.sqlStatement, [firstName, lastName, roleId, managerId]);
             }else{
                 this.sqlStatement = 
@@ -360,7 +402,6 @@ class Query{
         }
 
     }
-
 
     async addRole(roleName: string, salary: number, departmentName: string){
         console.log("RUNNING addRole method");

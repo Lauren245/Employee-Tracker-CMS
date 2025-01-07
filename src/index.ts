@@ -80,20 +80,14 @@ async function runPrompts() {
                     message: 'assign a role for the employee',
                     choices: async (answers) => {
                         //TODO: try to find more graceful way to do this.
+                        let departmentRoles: string[] = [];
                         if (answers.empDepartment) {
-                            return await Query.getDepartmentRoles(answers.empDepartment);
-                        }
+                            departmentRoles = await Query.getDepartmentRoles(answers.empDepartment);
+                            if(departmentRoles.length > 0){
+                                return departmentRoles;
+                            }
+                        }  
                         return [];
-                        // if (answers.empDepartment) {
-                        //     try {
-                        //         const roles = await Query.getDepartmentRoles(answers.empDepartment);
-                        //         return roles.length > 0 ? roles : ['No roles available for this department'];
-                        //     } catch (error) {
-                        //         console.error('Error fetching roles:', error);
-                        //         return ['Error fetching roles, please try again'];
-                        //     }
-                        // }
-                        // return ['No department selected'];
                     },
                     when: (answers) => !!answers.empDepartment
                 },
@@ -104,16 +98,17 @@ async function runPrompts() {
                     when: (answers) => !!answers.empRole //check if this works with empty arrays
                 },
                 {
-                    type: 'input',
-                    name: 'managerFName',
-                    message: `Please enter the manager's first name`,
+                    type: 'list',
+                    name: 'selectManager',
+                    message: 'Please select a manager for this employee',
+                    choices: async (answers) => {
+                        //ensure a department has already been specified for the new employee
+                        if(answers.empDepartment){
+                            return await Query.getEmployeesByDepartment(answers.empDepartment);
+                        }
+                        return [];
+                    },
                     when: (answers) => answers.includeManager === true
-                },
-                {
-                    type: 'input',
-                    name: 'managerLName',
-                    message: `Please enter the manager's last name`,
-                    when: (answers) => answers.managerFName != undefined
                 },
                 {
                     type: 'list',
@@ -183,15 +178,16 @@ async function runPrompts() {
                 case 'add an employee':
                     // check that empRole did not return an empty array
                     // only checking empRole because it is the last required item in a series of prompts
-                    if (answers.empRole.length != 0) {
-                        if (answers.managerFName && answers.managerLName) {
-                            await Query.addEmployee(answers.fName, answers.lName, answers.empDepartment, answers.empRole, answers.managerFName, answers.managerLName);
-                        } else {
+                    if(answers.empRole.length > 0){
+                        console.log(`answers.includeManager = ${answers.includeManager}`);
+                        if(answers.includeManager){
+                            await Query.addEmployee(answers.fName, answers.lName, answers.empDepartment, answers.empRole, answers.selectManager);
+                        }else {
                             await Query.addEmployee(answers.fName, answers.lName, answers.empDepartment, answers.empRole);
                         }
-                        //update employees array
-                         employeeArr = await Query.getEmployees();
                     }
+                    //update employees array
+                    employeeArr = await Query.getEmployees();
                     break;
                 case 'update an employee role':
                     //TODO: add if statement
@@ -201,7 +197,6 @@ async function runPrompts() {
                     exit = true;
                     //terminate the node.js app successfully
                     //this will be in the place of a break statement
-                    //TODO: add pool.end
                     await disconnectDB();
                     process.exit(0);
                 default:

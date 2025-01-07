@@ -33,3 +33,13 @@ WHERE emp.id <> emp.manager_id OR emp.manager_id IS NULL;
 --add a role
 
 -- update employee role
+
+
+SELECT emp.id, emp.first_name, emp.last_name, emp.role_id, 
+    rol.department_id, rol.title, dep.name
+FROM employee emp 
+    JOIN role rol 
+        ON emp.role_id = rol.id
+    JOIN department dep 
+        ON rol.department_id = dep.id
+WHERE dep.id = 1;
