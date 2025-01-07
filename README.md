@@ -125,6 +125,19 @@ Postgres documentation reference for pooling.
 
 ## Screenshots
 
+**Image of the schema for the company_db database.**
+
+![A screenshot of a VS Code workspace showing a PostgreSQL schema file named schema.sql. The file defines a database named company_db with three tables: department, role, and employee. Each table includes columns with specific data types and constraints, such as primary keys and foreign key relationships](./resources/screenshots/Employee-CMS-Schema.jpg)
+
+
+**Image of the main menu of the application running in the command line.**
+
+![A screenshot of a VS Code workspace showing a project directory and terminal output. After running the npm start command, the program compiles (tsc) and presents a menu with options such as "view all departments," "view all roles," "view all employees," "add a department," "add a role," "add an employee," and "update an employee role." The user is prompted to select an option using arrow keys.](./resources/screenshots/Employee-CMS-Main-Menu.jpg)
+
+**Image showing the table results from the view all employees prompt.**
+
+![A screenshot of a VS Code workspace showing a project directory and terminal output.After running the npm start command, the program compiles (tsc) and presents a menu with options. The option "view all employees" is selected, displaying a formatted table of employee data. The table includes columns for id, First Name, Last Name, title, department, salary, and manager. Example entries include "John Doe" as a Software Engineer in the Engineering department with a salary of 80,000. Below the table, the menu reappears with options like "view all departments" and "add an employee."](./resources/screenshots/Employee-CMS-View-All-Employees.jpg)
+
 
 ## Video Demonstration
 

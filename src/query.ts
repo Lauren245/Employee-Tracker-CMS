@@ -102,7 +102,7 @@ class Query{
 
             if(result.rowCount){
                 const resultsArr: string[] = result.rows.map(row => Object.values(row).toString().replace(/,/g, ' '));
-                //console.log(`resultsArr = ${JSON.stringify(resultsArr)}`);
+                console.log(`resultsArr = ${JSON.stringify(resultsArr)}`);
                 return resultsArr;
             }
 
@@ -476,7 +476,7 @@ class Query{
                 });
 
                 //console log a space after the table output to improve readability
-                //console.log("\n");
+                console.log("\n");
 
             }else{
                 //TODO: check to see if this returns the expected output
