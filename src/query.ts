@@ -124,13 +124,14 @@ class Query{
                 const departementId = await this.getDepartmentId(departmentName);
                 //console.log(`departmentID = ${departementId}`);
                 this.sqlStatement =
-                    `SELECT emp.id, emp.first_name, emp.last_name
+                    `SELECT emp.id, emp.first_name, emp.last_name, dep.name
                     FROM employee emp 
                         JOIN role rol 
                             ON emp.role_id = rol.id
                     JOIN department dep 
                         ON rol.department_id = dep.id
-                    WHERE dep.id = $1; `;
+                    WHERE dep.id = $1
+                    ORDER BY dep.name; `;
                 const result: QueryResult = await pool.query(this.sqlStatement, [departementId]);
                 let resultsArr: string[] = [];
 
@@ -238,7 +239,8 @@ class Query{
                             ON emp.role_id = rol.id
                     JOIN department dep 
                         ON rol.department_id = dep.id
-                    WHERE dep.id = $1; `;
+                    WHERE dep.id = $1
+                    ORDER BY rol.title; `;
                 const result: QueryResult = await pool.query(this.sqlStatement, [departementId]);
 
                 if(result.rowCount){
@@ -302,7 +304,8 @@ class Query{
                                 LEFT JOIN employee AS mgr
                                     ON emp.manager_id = mgr.id
                             --ensures the employee can't be their own manager.
-                            WHERE emp.id <> emp.manager_id OR emp.manager_id IS NULL;`;
+                            WHERE emp.id <> emp.manager_id OR emp.manager_id IS NULL
+                            ORDER BY dep.name, rol.title`;
                         break;
                     default:
                         throw new Error(`unable to build a query for the table "${tableName}".`);               
