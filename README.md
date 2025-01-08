@@ -107,15 +107,19 @@ Postgres documentation reference for pooling.
 
 4. **[PostgreSQL UPDATE](https://www.w3schools.com/postgresql/postgresql_update.php)** by W3 Schools: Resource for using the UPDATE statement in Postgre SQL.
 
-5. **[JavaScript String repeat()](https://www.w3schools.com/jsref/jsref_repeat.asp)** by W3 Schools: Resource for using the string repeat method. Used when creating output table.
+5. **[PostgreSQL DELETE](https://www.w3schools.com/postgresql/postgresql_delete.php)** by W3 Schools: Resource for using the DELETE statement in Postgre SQL.
 
-6. **[How to use Inquirer.js](https://javascript.plainenglish.io/how-to-inquirer-js-c10a4e05ef1f)** by Mat Wilmot on Medium: used for additional research on how to use Inquirer.js.
- 7. **[TypeScript String trim() Method](https://www.geeksforgeeks.org/typescript-string-trim-method/)** by Geeks for Geeks: Resource on using the string trim method, used when adding employees to the database.
-8. [ChatGPT Help with Async Await Bug Fix](https://chatgpt.com/share/676f5311-6e28-8012-b912-fe7942bcb977)
+6. **[JavaScript String repeat()](https://www.w3schools.com/jsref/jsref_repeat.asp)** by W3 Schools: Resource for using the string repeat method. Used when creating output table.
 
-9. [ChatGPT Help With Table Formatting](https://chatgpt.com/share/676f5d3a-279c-8012-8528-486955d4b515)
+7. **[How to use Inquirer.js](https://javascript.plainenglish.io/how-to-inquirer-js-c10a4e05ef1f)** by Mat Wilmot on Medium: used for additional research on how to use Inquirer.js.
 
-10. [ChatGPT how to use the LOWER() function in SQL](https://chatgpt.com/share/676f7d34-db7c-8012-8207-339638419efc)
+8. **[TypeScript String trim() Method](https://www.geeksforgeeks.org/typescript-string-trim-method/)** by Geeks for Geeks: Resource on using the string trim method, used when adding employees to the database.
+
+9. [ChatGPT Help with Async Await Bug Fix](https://chatgpt.com/share/676f5311-6e28-8012-b912-fe7942bcb977)
+
+10. [ChatGPT Help With Table Formatting](https://chatgpt.com/share/676f5d3a-279c-8012-8528-486955d4b515)
+
+11. [ChatGPT how to use the LOWER() function in SQL](https://chatgpt.com/share/676f7d34-db7c-8012-8207-339638419efc)
 
 ### 3rd-Party Software
 1.  **[Inquirer.js](https://github.com/SBoudrias/Inquirer.js)** Copyright (c) 2023 Simon Boudrias (twitter: [@vaxilart](https://twitter.com/Vaxilart)) - Licensed under the MIT license.
