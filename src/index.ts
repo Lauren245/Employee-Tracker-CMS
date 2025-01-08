@@ -9,6 +9,7 @@ async function runPrompts() {
     //create an array of department names to store in case the user wants to add a role
     let departmentsArr: string[] = await Query.getDepartments();
     let employeeArr = await Query.getEmployees();
+    let departmentEmployees: string[];
     
     do {
         try {
@@ -94,9 +95,19 @@ async function runPrompts() {
                     name: 'selectManager',
                     message: 'Please select a manager for this employee',
                     choices: async (answers) => {
-                        return await Query.getEmployeesByDepartment(answers.empDepartment);      
+                        departmentEmployees = await Query.getEmployeesByDepartment(answers.empDepartment);
+                        return departmentEmployees;
                     },
-                    when: (answers) => answers.includeManager === true
+                    when: (answers) => {
+                        if(answers.includeManager === true){
+                            if(!departmentEmployees ||departmentEmployees.length === 0){
+                                console.log(`Skipping manager selection: No valid employees found in ${answers.empDepartment}.`);
+                                return false;
+                            }
+                        }
+                       
+                        return answers.includeManager;
+                    }
                 },
                 {
                     type: 'list',
@@ -182,9 +193,7 @@ async function runPrompts() {
                     employeeArr = await Query.getEmployees();
                     break;
                 case 'update an employee role':
-                    if(answers.employeebyDepartment){
-                        await Query.updateEmployeeRole(answers.employee, answers.department, answers.departmentRoles);
-                    }
+                    await Query.updateEmployeeRole(answers.employee, answers.department, answers.departmentRoles);   
                     break;
                 case 'exit':
                     exit = true;
@@ -203,6 +212,7 @@ async function runPrompts() {
                 console.error(`An unexpected error occurred: ${error}`);
             }
         }
+
     } while (!exit);
 }
 
