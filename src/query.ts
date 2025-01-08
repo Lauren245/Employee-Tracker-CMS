@@ -482,6 +482,51 @@ class Query{
         }
     //#endregion
     
+    //#region DELETE METHODS
+        async deleteEmployee(employeeInfo:string){
+            console.log(`RUNNING deleteEmployee`)
+            console.log(`values passed in for employeeInfo = ${JSON.stringify(employeeInfo)}`);
+
+            try{
+
+                const split = employeeInfo.split(' ');
+                //get the content after the last , 
+                const employeeId = split[0].trim();
+                console.log(`EMPLOYEE id = ${employeeId}`);
+                
+                const checkQuery = 
+                    `SELECT *
+                    FROM employee
+                    WHERE id = $1;`;
+                
+                const checkResult: QueryResult = await pool.query(checkQuery, [employeeId]);
+
+                if(checkResult.rowCount){
+                    //someone has that id. proceed to delete
+                    this.sqlStatement =
+                        `DELETE FROM employee
+                        WHERE id = $1`;
+
+                    const deleteResult: QueryResult = await pool.query(this.sqlStatement, [employeeId]);
+                    if(deleteResult.rowCount === 1){
+                        console.log(`Employee deleted successfully.`);
+                    }else{
+                        throw new Error (`Failed to successfully delete the employee with id ${employeeId}.`)
+                    }                   
+                }else{
+                    throw new Error(`Unable to find an employee with the id ${employeeId} in the database.`);
+                }
+
+            }catch(error){
+                if(error instanceof Error){
+                    console.error(`\n deleteEmployee encountered an error: ${error.stack}`);
+                }else{
+                    console.error(`\n deleteEmployee encountered an error: ${error}`);
+                }
+            }
+        }
+    //#endregion
+
 
 
     //#region UPDATE METHODS

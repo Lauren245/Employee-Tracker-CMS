@@ -27,6 +27,7 @@ async function runPrompts() {
                         'add a role', 
                         'add an employee',
                         'update an employee role',
+                        'delete an employee',
                         'exit'
                     ],
                 },
@@ -127,6 +128,22 @@ async function runPrompts() {
                     message: 'Which department would you like to see the employees of?',
                     choices: departmentsArr,
                     when: (answers) => answers.actions === 'view employees by department'
+                },
+                {
+                    type:'list',
+                    name: 'employeeByDepartmentDelete',
+                    message: 'Which department does the employee belong to?',
+                    choices: departmentsArr,
+                    when: (answers) => answers.actions === 'delete an employee'
+                },
+                {
+                    type: 'list',
+                    name: 'employeeToDelete',
+                    message: 'Which employee would you like to delete?',
+                    choices: async (answers) => {
+                        return await Query.getEmployeesByDepartment(answers.employeeByDepartmentDelete);      
+                    },
+                    when: (answers) => !!answers.employeeByDepartmentDelete
                 }
 
             ]);
@@ -182,9 +199,10 @@ async function runPrompts() {
                     employeeArr = await Query.getEmployees();
                     break;
                 case 'update an employee role':
-                    if(answers.employeebyDepartment){
-                        await Query.updateEmployeeRole(answers.employee, answers.department, answers.departmentRoles);
-                    }
+                    await Query.updateEmployeeRole(answers.employee, answers.department, answers.departmentRoles);
+                    break;
+                case 'delete an employee':
+                    await Query.deleteEmployee(answers.employeeToDelete);
                     break;
                 case 'exit':
                     exit = true;
