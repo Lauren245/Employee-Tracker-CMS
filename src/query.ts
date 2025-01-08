@@ -134,14 +134,20 @@ class Query{
                     ON rol.department_id = dep.id
                 WHERE dep.id = $1; `;
             const result: QueryResult = await pool.query(this.sqlStatement, [departementId]);
+            let resultsArr: string[] = [];
 
+            console.log(`result.rowCount = ${JSON.stringify(result.rowCount)}`);
+            
             if(result.rowCount){
-                const resultsArr: string[] = result.rows.map(row => Object.values(row).toString().replace(/,/g, ' '));
-                //console.log(`resultsArr = ${JSON.stringify(resultsArr)}`);
-                return resultsArr;
-            }
+                resultsArr = result.rows.map(row => Object.values(row).toString().replace(/,/g, ' '));
+                console.log(`resultsArr = ${JSON.stringify(resultsArr)}`);
 
-            throw new Error(`unable to get employees in the "${departmentName}" department from the database.`);
+            }else if(result.rowCount === 0){
+                console.log(`unable to find another employee in ${departmentName} to assign as manager`);
+                resultsArr = ['null'];
+                console.log(`resultsArr = ${JSON.stringify(resultsArr)}`);
+            }
+            return resultsArr;
 
         }catch(error){
             if(error instanceof Error){
@@ -335,37 +341,53 @@ class Query{
     //TODO ensure there are no leading or trailing spaces on the names.
     //employee's first name, last name, role, and manager, and that employee is added to the database
     async addEmployee(firstName: string, lastName: string, departmentName: string, roleName: string,  managerInfo?: string){
-        //console.log('RUNNING addEmployee');
+        console.log('RUNNING addEmployee');
+        console.log(`values passed in for name = ${firstName},${lastName}`);
         try{
-                //get the id for role using their names
-                const roleId = await this.getRoleId(roleName, departmentName);              
+            //ensure employee name information is valid
+            if(firstName === '' || lastName === ''){
+                throw new Error(`Invalid values for first and last names.`);
+            }
+            const tFirstName = firstName.trim();
+            const tLastName = lastName.trim();
 
+
+            //get the id for role using their names
+            const roleId = await this.getRoleId(roleName, departmentName);              
             //having a manager is not required so different actions must be taken if no manager is entered.
-            if(managerInfo){
-                //console.log('inside managerInfo if statement');
-                //console.log(`values passed in for managerInfo = ${JSON.stringify(managerInfo)}`);
-                const split = managerInfo.split(' ');
-                //get the content after the last , 
-                const managerId = split[0].trim();
-                //console.log(`MANAGER id = ${managerId}`);
-                this.sqlStatement = 
-                  `INSERT INTO employee (first_name, last_name, role_id, manager_id)
-                   VALUES($1, $2, $3, $4)`;
-                //get the id for manager using their name
-                //const managerId = await this.getManagerId(managerFName, managerLName);
-                await pool.query(this.sqlStatement, [firstName, lastName, roleId, managerId]);
-            }else{
+            //managerInfo can equal the string 'null' if the user requested to enter a manager and there were no other employees in the specified department
+            if((!managerInfo || managerInfo === 'null')){
+                if(managerInfo === 'null'){
+                    console.log(`The user attempted to specify a manager for employee "${tFirstName} ${tLastName}" but no other employees could be found in the "${departmentName}" department. Manager will be set to null.`);
+                }
                 this.sqlStatement = 
                   `INSERT INTO employee (first_name, last_name, role_id)
                    VALUES($1, $2, $3)`;
-                await pool.query(this.sqlStatement, [firstName, lastName, roleId]);
-            }
+                await pool.query(this.sqlStatement, [tFirstName, tLastName, roleId]);          
+            }else{
+                console.log(`inside manager else statement`);
+                 //console.log('inside managerInfo if statement');
+                 console.log(`values passed in for managerInfo = ${JSON.stringify(managerInfo)}`);
+                 const split = managerInfo.split(' ');
+                 //get the content after the last , 
+                 const managerId = split[0].trim();
+                 //console.log(`MANAGER id = ${managerId}`);
+                 this.sqlStatement = 
+                 `INSERT INTO employee (first_name, last_name, role_id, manager_id)
+                 VALUES($1, $2, $3, $4)`;
 
-            console.log(`Employee "${firstName} ${lastName}" was added successfully!`);
+                await pool.query(this.sqlStatement, [tFirstName, tLastName, roleId, managerId]);
+            }
+            
+            console.log(`Employee "${tFirstName} ${tLastName}" was added successfully!`);
 
 
         }catch(error){
-            console.error(`\n addEmployee encoutered an unexpected error: ${error}`);
+            if(error instanceof Error){
+                console.error(`\n addEmployee encountered an error ${error.stack}`);
+            }else{
+                console.error(`\n addEmployee encoutered an unexpected error: ${error}`);
+            }
         }
 
     }
