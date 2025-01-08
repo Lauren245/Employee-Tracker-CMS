@@ -346,7 +346,6 @@ class Query{
 
 
     //#region ADD METHODS
-        //TODO: figure out how to modify this to preventSQL injections, there is a possiblility that the pool statement will handle this.
         async addDepartment(departmentName: string){
             //console.log('RUNNING addDepartment');
             //console.log(`Department name passed in = ${departmentName}`);
