@@ -7,7 +7,6 @@ async function runPrompts() {
     let exit: boolean = false;
     await connectToDB();
     //create an array of department names to store in case the user wants to add a role
-    //!!! I think I may change this to be better match how I'm handling getDepartmentRoles
     let departmentsArr: string[] = await Query.getDepartments();
     let employeeArr = await Query.getEmployees();
     
@@ -47,14 +46,14 @@ async function runPrompts() {
                     type: 'number',
                     name: 'roleSalary',
                     message: 'Please enter the salary for this role.',
-                    when: (answers) => answers.roleName != undefined
+                    when: (answers) => !!answers.roleName
                 },
                 {
                     type: 'list',
                     name: 'selectDepartment',
                     message: 'Which department does this new role belong to?',
                     choices: departmentsArr,
-                    when: (answers) => answers.roleSalary != undefined
+                    when: (answers) => !!answers.roleSalary
                 },
                 {
                     type: 'input',
@@ -66,28 +65,21 @@ async function runPrompts() {
                     type: 'input',
                     name: 'lName',
                     message: 'Please enter the last name of the employee',
-                    when: (answers) => answers.fName != undefined
+                    when: (answers) => !!answers.fName 
                 },
                 {
                     type: 'list',
                     name: 'empDepartment',
                     message: 'which department will this employee work in?',
                     choices: departmentsArr,
-                    when: (answers) => answers.lName != undefined
+                    when: (answers) => !!answers.lName
                 },
                 {
                     type: 'list',
                     name: 'empRole',
                     message: 'assign a role for the employee',
                     choices: async (answers) => {
-                        let departmentRoles: string[] = [];
-                        if (answers.empDepartment) {
-                            departmentRoles = await Query.getDepartmentRoles(answers.empDepartment);
-                            if(departmentRoles.length > 0){
-                                return departmentRoles;
-                            }
-                        }  
-                        return [];
+                        return await Query.getDepartmentRoles(answers.empDepartment);
                     },
                     when: (answers) => !!answers.empDepartment
                 },
@@ -102,11 +94,7 @@ async function runPrompts() {
                     name: 'selectManager',
                     message: 'Please select a manager for this employee',
                     choices: async (answers) => {
-                        //ensure a department has already been specified for the new employee
-                        if(answers.empDepartment){
-                            return await Query.getEmployeesByDepartment(answers.empDepartment);
-                        }
-                        return [];
+                        return await Query.getEmployeesByDepartment(answers.empDepartment);      
                     },
                     when: (answers) => answers.includeManager === true
                 },
@@ -129,10 +117,7 @@ async function runPrompts() {
                     name: 'departmentRoles',
                     message: `Please select the employee's new role`,
                     choices: async (answers) => {
-                        if (answers.department) {
-                            return await Query.getDepartmentRoles(answers.department);
-                        }
-                        return [];
+                        return await Query.getDepartmentRoles(answers.department);
                     },
                     when: (answers) => !!answers.department
                 },
@@ -145,7 +130,6 @@ async function runPrompts() {
                 }
 
             ]);
-            //TODO: figure out a way to handle falsey values in if statement checks inside the switch statement
             let sqlStatement = '';
             switch (answers.actions) {
                 case 'view all departments':
@@ -194,12 +178,13 @@ async function runPrompts() {
                             await Query.addEmployee(answers.fName, answers.lName, answers.empDepartment, answers.empRole);
                         }
                     }
-                    //update employees array
+                    //update employees array so it includes the new employee.
                     employeeArr = await Query.getEmployees();
                     break;
                 case 'update an employee role':
-                    //TODO: add if statement
-                    await Query.updateEmployeeRole(answers.employee, answers.department, answers.departmentRoles);
+                    if(answers.employeebyDepartment){
+                        await Query.updateEmployeeRole(answers.employee, answers.department, answers.departmentRoles);
+                    }
                     break;
                 case 'exit':
                     exit = true;
@@ -218,7 +203,6 @@ async function runPrompts() {
                 console.error(`An unexpected error occurred: ${error}`);
             }
         }
-        //console.log(`At end of do/while loop. exit = ${exit}`);
     } while (!exit);
 }
 
