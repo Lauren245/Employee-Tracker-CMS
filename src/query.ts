@@ -142,7 +142,7 @@ class Query{
 
                 }else if(result.rowCount === 0){
                     console.log(`unable to find another employee in ${departmentName} to assign as manager`);
-                    resultsArr = [];
+                    resultsArr = ['null'];
                     console.log(`resultsArr = ${JSON.stringify(resultsArr)}`);
                 }
                 return resultsArr;
@@ -238,8 +238,7 @@ class Query{
                             ON emp.role_id = rol.id
                     JOIN department dep 
                         ON rol.department_id = dep.id
-                    WHERE dep.id = $1
-                    ORDER BY rol.title;`;
+                    WHERE dep.id = $1; `;
                 const result: QueryResult = await pool.query(this.sqlStatement, [departementId]);
 
                 if(result.rowCount){
@@ -260,6 +259,7 @@ class Query{
         }
         
         //This method constructs queries to view all of the elements related to the provided table
+        //TODO: I think this should probably be async
         buildViewAllQuery(tableName: string): string{
             //console.log('RUNNING buildViewAllQuery');
             //console.log(`this.sqlStatement =  ${this.sqlStatement}`);
@@ -280,8 +280,7 @@ class Query{
                                 dep.name AS department, rol.salary AS salary
                             FROM role AS rol
                                 JOIN department AS dep
-                                    ON rol.department_id = dep.id
-                            ORDER BY department;`;
+                                    ON rol.department_id = dep.id;`;
                         break;
         
                     case 'employee':
