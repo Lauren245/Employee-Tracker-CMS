@@ -78,7 +78,10 @@ You should now be able to use the Employee-Tracker-CMS application to manage you
 4. **Update Data**:
     - **Update an Employee Role**: Select this option to update an employee's role. You will be prompted to select the employee, their new department, and their new role.
 
-5. **Exit the Application**: Select this option to exit the application. The database connection will be closed, and the application will terminate.
+5. **Delete Data**:
+    - **Delete Employee**: Select this option to delete an employee.
+
+6. **Exit the Application**: Select this option to exit the application. The database connection will be closed, and the application will terminate.
 
 ## Tests
 - There are no unit tests, but the application can be tested manually.
@@ -145,7 +148,9 @@ Postgres documentation reference for pooling.
 
 ## Video Demonstration
  **[Link to demonstration video on Google Drive](https://drive.google.com/file/d/1iCmjnRVdJv8BsyRfpNkGC18CrDG4rWhC/view?usp=sharing)**
- 
+
+ *Note: Video demo does not yet contain the delete an employee option. It was added in an update.*
+
 --- 
 
 **[Back to Top](#employee-tracker-cms)**
