@@ -27,7 +27,6 @@ async function runPrompts() {
                         'add a role', 
                         'add an employee',
                         'update an employee role',
-                        'delete a department',
                         'delete an employee',
                         'exit'
                     ],
@@ -131,13 +130,6 @@ async function runPrompts() {
                     when: (answers) => answers.actions === 'view employees by department'
                 },
                 {
-                    type: 'list',
-                    name: 'deleteDepartment',
-                    message: 'Select the department you would like to delete',
-                    choices: departmentsArr,
-                    when: (answers) => answers.actions === 'delete a department'
-                },
-                {
                     type:'list',
                     name: 'deleteEmpFromDepartment',
                     message: 'Which department does the employee belong to?',
@@ -163,25 +155,21 @@ async function runPrompts() {
                         await Query.renderViewAllQuery();
                     }
                     break;
-
                 case 'view all roles':
                     sqlStatement = Query.buildViewAllQuery('role');
                     if (sqlStatement) {
                         await Query.renderViewAllQuery();
                     }
                     break;
-
                 case 'view all employees':
                     sqlStatement = Query.buildViewAllQuery('employee');
                     if (sqlStatement) {
                         await Query.renderViewAllQuery();
                     }
                     break;
-
                 case 'view employees by department':
-                    await Query.viewEmployeesByDepartment(answers.viewEmpByDepartment);
-                    break;
-
+                        await Query.viewEmployeesByDepartment(answers.viewEmpByDepartment);
+                        break;
                 case 'add a department':
                     //check that departmentName is truthy 
                     if(answers.departmentName){
@@ -190,7 +178,6 @@ async function runPrompts() {
                         departmentsArr = await Query.getDepartments();
                     }
                     break;
-
                 case 'add a role':
                     //check that selectDepartment is truthy
                     //only checking selectDepartment because it is the last in a series of prompts
@@ -198,7 +185,6 @@ async function runPrompts() {
                         await Query.addRole(answers.roleName, answers.setRoleSalary, answers.selectDepartment);
                     }
                     break;
-
                 case 'add an employee':
                     // check that empRole did not return an empty array
                     // only checking empRole because it is the last required item in a series of prompts
@@ -212,20 +198,12 @@ async function runPrompts() {
                     //update employees array so it includes the new employee.
                     employeeArr = await Query.getEmployees();
                     break;
-
                 case 'update an employee role':
                     await Query.updateEmployeeRole(answers.updateEmployee, answers.empUpdateDepartment, answers.empUpdateRole);
                     break;
-
-                case 'delete a department':
-                    console.log(`Inside deleteDepartment case`);
-                    await Query.deleteDepartment(answers.deleteDepartment);
-                    break;
-
                 case 'delete an employee':
                     await Query.deleteEmployee(answers.empToDelete);
                     break;
-
                 case 'exit':
                     exit = true;
                     //terminate the node.js app successfully
