@@ -1,26 +1,10 @@
 import { QueryResult } from "pg";
 import { pool } from "./connection.js";
 
-/*DEPARTMENT METHODS
-    1. viewAllDepartments()
-    2. addDepartment(departmentName: string) 
-*/
-
-/*EMPLOYEE METHODS
-    1. viewAllEmployees()
-    2. addEmployee(firstName: string, lastName: string, jobTitle: string, departmentName: string, managerId?: number)
-    3. updateEmployeeRole(employeeId: number, )
- */
-
-/*ROLE METHODS
-    1. viewAllRoles
-    2. addRole
-*/
 class Query{
     sqlStatement?: string
 
     constructor(){
-        //console.log("inside query constructor");
     }
     //#region ARRAY GETTERS
         async getDepartments(): Promise<string[]>{
@@ -100,7 +84,6 @@ class Query{
 
                 if(result.rowCount){
                     const resultsArr: string[] = result.rows.map(row => Object.values(row).toString().replace(/,/g, ' '));
-                    //console.log(`resultsArr = ${JSON.stringify(resultsArr)}`);
                     return resultsArr;
                 }
 
@@ -122,7 +105,6 @@ class Query{
             // console.log(`departmentName passed in = ${departmentName}`);
             try{
                 const departementId = await this.getDepartmentId(departmentName);
-                //console.log(`departmentID = ${departementId}`);
                 this.sqlStatement =
                     `SELECT emp.id, emp.first_name, emp.last_name, dep.name
                     FROM employee emp 
@@ -175,11 +157,9 @@ class Query{
                     WHERE name = $1;`;
 
                 const departmentIdResult = await pool.query(departmentIdQuery, [departmentName]);
-                //console.log(`departmentIdResult.rows = ${departmentIdResult.rows}`);
 
                 //convert to number
-                const departmentId = parseInt(departmentIdResult.rows[0].id);
-                //console.log(`departmentId = ${departmentId}`);
+                const departmentId = parseInt(departmentIdResult.rows[0].id);   
 
                 const roleIdQuery = 
                     `SELECT id
@@ -189,7 +169,6 @@ class Query{
 
                 //convert to number
                 const roleId = parseInt(roleIdResult.rows[0].id);
-                //console.log(`roleId = ${roleId}`);
 
                 return roleId;
 
@@ -211,7 +190,6 @@ class Query{
 
                 //convert to number
                 const departmentId = parseInt(departmentIdResult.rows[0].id);
-                //console.log(`departmentId = ${departmentId}`);
 
                 return departmentId;
                 
@@ -231,7 +209,7 @@ class Query{
             // console.log(`departmentName passed in = ${departmentName}`);
             try{
                 const departementId = await this.getDepartmentId(departmentName);
-                //console.log(`departmentID = ${departementId}`);
+
                 this.sqlStatement =
                     `SELECT emp.id, emp.first_name, emp.last_name, rol.title
                     FROM employee emp 
@@ -282,7 +260,8 @@ class Query{
                                 dep.name AS department, rol.salary AS salary
                             FROM role AS rol
                                 JOIN department AS dep
-                                    ON rol.department_id = dep.id;`;
+                                    ON rol.department_id = dep.id
+                            ORDER BY dep.name, rol.title;`;
                         break;
         
                     case 'employee':
