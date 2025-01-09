@@ -45,7 +45,7 @@ async function runPrompts() {
                 },
                 {
                     type: 'number',
-                    name: 'roleSalary',
+                    name: 'setRoleSalary',
                     message: 'Please enter the salary for this role.',
                     when: (answers) => !!answers.roleName
                 },
@@ -54,26 +54,26 @@ async function runPrompts() {
                     name: 'selectDepartment',
                     message: 'Which department does this new role belong to?',
                     choices: departmentsArr,
-                    when: (answers) => !!answers.roleSalary
+                    when: (answers) => !!answers.setRoleSalary
                 },
                 {
                     type: 'input',
-                    name: 'fName',
+                    name: 'empFName',
                     message: 'Please enter the first name of the employee',
                     when: (answers) => answers.actions === 'add an employee'
                 },
                 {
                     type: 'input',
-                    name: 'lName',
+                    name: 'empLName',
                     message: 'Please enter the last name of the employee',
-                    when: (answers) => !!answers.fName 
+                    when: (answers) => !!answers.empFName 
                 },
                 {
                     type: 'list',
                     name: 'empDepartment',
                     message: 'which department will this employee work in?',
                     choices: departmentsArr,
-                    when: (answers) => !!answers.lName
+                    when: (answers) => !!answers.empLName
                 },
                 {
                     type: 'list',
@@ -101,49 +101,49 @@ async function runPrompts() {
                 },
                 {
                     type: 'list',
-                    name: 'employee',
+                    name: 'updateEmployee',
                     message: `Which employee's role do you want to update?`,
                     choices: employeeArr,
                     when: (answers) => answers.actions === 'update an employee role'
                 },
                 {
                     type: 'list',
-                    name: 'department',
+                    name: 'empUpdateDepartment',
                     message: 'Which department does their new role belong to?',
                     choices: departmentsArr,
-                    when: (answers) => !!answers.employee
+                    when: (answers) => !!answers.updateEmployee
                 },
                 {
                     type: 'list',
-                    name: 'departmentRoles',
+                    name: 'empUpdateRole',
                     message: `Please select the employee's new role`,
                     choices: async (answers) => {
-                        return await Query.getDepartmentRoles(answers.department);
+                        return await Query.getDepartmentRoles(answers.empUpdateDepartment);
                     },
-                    when: (answers) => !!answers.department
+                    when: (answers) => !!answers.empUpdateDepartment
                 },
                 {
                     type: 'list',
-                    name: 'employeebyDepartment',
+                    name: 'viewEmpByDepartment',
                     message: 'Which department would you like to see the employees of?',
                     choices: departmentsArr,
                     when: (answers) => answers.actions === 'view employees by department'
                 },
                 {
                     type:'list',
-                    name: 'employeeByDepartmentDelete',
+                    name: 'deleteEmpFromDepartment',
                     message: 'Which department does the employee belong to?',
                     choices: departmentsArr,
                     when: (answers) => answers.actions === 'delete an employee'
                 },
                 {
                     type: 'list',
-                    name: 'employeeToDelete',
+                    name: 'empToDelete',
                     message: 'Which employee would you like to delete?',
                     choices: async (answers) => {
-                        return await Query.getEmployeesByDepartment(answers.employeeByDepartmentDelete);      
+                        return await Query.getEmployeesByDepartment(answers.deleteEmpFromDepartment);      
                     },
-                    when: (answers) => !!answers.employeeByDepartmentDelete
+                    when: (answers) => !!answers.deleteEmpFromDepartment
                 }
 
             ]);
@@ -168,7 +168,7 @@ async function runPrompts() {
                     }
                     break;
                 case 'view employees by department':
-                        await Query.viewEmployeesByDepartment(answers.employeebyDepartment);
+                        await Query.viewEmployeesByDepartment(answers.viewEmpByDepartment);
                         break;
                 case 'add a department':
                     //check that departmentName is truthy 
@@ -182,7 +182,7 @@ async function runPrompts() {
                     //check that selectDepartment is truthy
                     //only checking selectDepartment because it is the last in a series of prompts
                     if(answers.selectDepartment){
-                        await Query.addRole(answers.roleName, answers.roleSalary, answers.selectDepartment);
+                        await Query.addRole(answers.roleName, answers.setRoleSalary, answers.selectDepartment);
                     }
                     break;
                 case 'add an employee':
@@ -190,19 +190,19 @@ async function runPrompts() {
                     // only checking empRole because it is the last required item in a series of prompts
                     if(answers.empRole.length > 0){
                         if(answers.includeManager){
-                            await Query.addEmployee(answers.fName, answers.lName, answers.empDepartment, answers.empRole, answers.selectManager);
+                            await Query.addEmployee(answers.empFName, answers.empLName, answers.empDepartment, answers.empRole, answers.selectManager);
                         }else {
-                            await Query.addEmployee(answers.fName, answers.lName, answers.empDepartment, answers.empRole);
+                            await Query.addEmployee(answers.empFName, answers.empLName, answers.empDepartment, answers.empRole);
                         }
                     }
                     //update employees array so it includes the new employee.
                     employeeArr = await Query.getEmployees();
                     break;
                 case 'update an employee role':
-                    await Query.updateEmployeeRole(answers.employee, answers.department, answers.departmentRoles);
+                    await Query.updateEmployeeRole(answers.updateEmployee, answers.empUpdateDepartment, answers.empUpdateRole);
                     break;
                 case 'delete an employee':
-                    await Query.deleteEmployee(answers.employeeToDelete);
+                    await Query.deleteEmployee(answers.empToDelete);
                     break;
                 case 'exit':
                     exit = true;
