@@ -504,6 +504,11 @@ class Query{
                 }
             }
         }
+
+        async deleteDepartment(departementName: string){
+            console.log(`RUNNING delete department`);
+            console.log(`departmentName passed in = ${JSON.stringify(departementName)}, typeof = ${typeof(JSON.stringify(departementName))}`);
+        }
     //#endregion
 
 
