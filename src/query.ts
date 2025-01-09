@@ -8,7 +8,6 @@ class Query{
     }
     //#region ARRAY GETTERS
         async getDepartments(): Promise<string[]>{
-            //console.log("RUNNING getDepartments");
             try{
                 this.sqlStatement = 
                     `SELECT name
@@ -33,13 +32,12 @@ class Query{
                 }else{
                     console.error(`\n getDepartments encountered an unexpected error: ${error}`);
                 }
-                //TODO: change this to empty array
+
                 throw new Error //either keep this, or figure out data validation for empty array.
             }
         }
-        //TODO: add code that better handles a department not having roles
+
         async getDepartmentRoles(departmentName: string): Promise<string[]>{
-            //console.log("RUNNING getDepartmentRoles");
             try{
                 //get the department ID based off its name
                 const departmentId = await this.getDepartmentId(departmentName);
@@ -54,7 +52,6 @@ class Query{
                 const resultArr: string[] = []
 
                 if(result.rowCount){
-                    //TODO: ??? change to result.rows.map?
                     for(let i = 0; i < result.rowCount; i++){
                         resultArr.push((Object.values(result.rows[i]).toString()));
                     }
@@ -101,8 +98,6 @@ class Query{
 
         //this will be used for the manager selection list when adding a new employee to the DB. This ensures that only managers from the given departement are selected.
         async getEmployeesByDepartment(departmentName: string): Promise<string []>{
-            // console.log('RUNNING getEmployeesByDepartment');
-            // console.log(`departmentName passed in = ${departmentName}`);
             try{
                 const departementId = await this.getDepartmentId(departmentName);
                 this.sqlStatement =
@@ -116,17 +111,13 @@ class Query{
                     ORDER BY dep.name; `;
                 const result: QueryResult = await pool.query(this.sqlStatement, [departementId]);
                 let resultsArr: string[] = [];
-
-                console.log(`result.rowCount = ${JSON.stringify(result.rowCount)}`);
                 
                 if(result.rowCount){
                     resultsArr = result.rows.map(row => Object.values(row).toString().replace(/,/g, ' '));
-                    console.log(`resultsArr = ${JSON.stringify(resultsArr)}`);
 
                 }else if(result.rowCount === 0){
                     console.log(`unable to find another employee in ${departmentName} to assign as manager`);
                     resultsArr = ['null'];
-                    console.log(`resultsArr = ${JSON.stringify(resultsArr)}`);
                 }
                 return resultsArr;
 
@@ -149,7 +140,6 @@ class Query{
         this is needed becasue mulitple departments can have a role with the same name, but department
         can't have multiple roles with the same name.*/
         async getRoleId(roleName: string, departmentName: string): Promise<number>{
-            //console.log('RUNNING getRoleId');
             try{
                 const departmentIdQuery = 
                     `SELECT id
@@ -179,7 +169,6 @@ class Query{
         }
 
         async getDepartmentId(departmentName: string): Promise<number>{
-            //console.log('RUNNING getDepartmentId');
             try{
                 const departmentIdQuery =
                     `SELECT id 
@@ -205,8 +194,6 @@ class Query{
     //#region VIEW METHODS
         //this will be used for the manager selection list when adding a new employee to the DB. This ensures that only managers from the given departement are selected.
         async viewEmployeesByDepartment(departmentName: string){
-            // console.log('RUNNING viewEmployeesByDepartment');
-            // console.log(`departmentName passed in = ${departmentName}`);
             try{
                 const departementId = await this.getDepartmentId(departmentName);
 
@@ -241,9 +228,6 @@ class Query{
         //This method constructs queries to view all of the elements related to the provided table
         //TODO: I think this should probably be async
         buildViewAllQuery(tableName: string): string{
-            //console.log('RUNNING buildViewAllQuery');
-            //console.log(`this.sqlStatement =  ${this.sqlStatement}`);
-            //console.log(`table name passed in = ${tableName}`);
             try{
                 switch(tableName){
                     case 'department':
@@ -304,8 +288,6 @@ class Query{
         //When given a valid SQL statement (meaning this.sqlStatement is truthy), this method queries the database and calls the method to render the table
         //I isolated this from the code that builds the SQL statement, because (unlike that code), this code remains the same for every view all query
         async renderViewAllQuery(){
-            //console.log('RUNNING renderViewAllQuery');
-            //console.log(`this.sqlStatement =  ${this.sqlStatement}`);
             try{
                 //ensure sqlStatement property has a truthy value.
                 if(this.sqlStatement){
@@ -329,8 +311,7 @@ class Query{
 
     //#region ADD METHODS
         async addDepartment(departmentName: string){
-            //console.log('RUNNING addDepartment');
-            //console.log(`Department name passed in = ${departmentName}`);
+
         
             try{
                 /*I'm converting departmentName to lowerCase and comparing it to existing department names (converted to lowercase using the database
@@ -342,7 +323,6 @@ class Query{
                 const checkQuery = `SELECT COUNT(*) FROM department WHERE LOWER(name) = $1`;
                 const checkResult = await pool.query(checkQuery, [lowerCaseDepName]);
                     
-                //console.log(`checkResult = ${JSON.stringify(checkResult.rows)}`);
                 //check if a record was returned from the previous query
                 if(parseInt(checkResult.rows[0].count) > 0){
                     //I considered making this an error, but it isn't really an error that the app needs to know about.
@@ -364,8 +344,6 @@ class Query{
         //TODO ensure there are no leading or trailing spaces on the names.
         //employee's first name, last name, role, and manager, and that employee is added to the database
         async addEmployee(firstName: string, lastName: string, departmentName: string, roleName: string,  managerInfo?: string){
-            console.log('RUNNING addEmployee');
-            console.log(`values passed in for name = ${firstName},${lastName}`);
             try{
                 //ensure employee name information is valid
                 if(firstName === '' || lastName === ''){
@@ -388,13 +366,10 @@ class Query{
                     VALUES($1, $2, $3)`;
                     await pool.query(this.sqlStatement, [tFirstName, tLastName, roleId]);          
                 }else{
-                    console.log(`inside manager else statement`);
-                    //console.log('inside managerInfo if statement');
-                    console.log(`values passed in for managerInfo = ${JSON.stringify(managerInfo)}`);
                     const split = managerInfo.split(' ');
                     //get the content after the last , 
                     const managerId = split[0].trim();
-                    //console.log(`MANAGER id = ${managerId}`);
+
                     this.sqlStatement = 
                     `INSERT INTO employee (first_name, last_name, role_id, manager_id)
                     VALUES($1, $2, $3, $4)`;
@@ -416,7 +391,6 @@ class Query{
         }
 
         async addRole(roleName: string, salary: number, departmentName: string){
-            //console.log("RUNNING addRole method");
             try{
                 //check if role is duplicate
                 const lowerCaseRoleName = roleName.toLowerCase();
@@ -463,15 +437,10 @@ class Query{
     
     //#region DELETE METHODS
         async deleteEmployee(employeeInfo:string){
-            console.log(`RUNNING deleteEmployee`)
-            console.log(`values passed in for employeeInfo = ${JSON.stringify(employeeInfo)}`);
-
             try{
-
                 const split = employeeInfo.split(' ');
                 //get the content after the last , 
                 const employeeId = split[0].trim();
-                console.log(`EMPLOYEE id = ${employeeId}`);
                 
                 const checkQuery = 
                     `SELECT *
@@ -510,17 +479,13 @@ class Query{
 
     //#region UPDATE METHODS
         async updateEmployeeRole(employeeInfo: string, newDepartmentName: string, newRoleName: string){
-            //console.log(`RUNNING updateEmployeeRole`);
-            //console.log(`value passed in = ${JSON.stringify(employeeInfo)}, ${newDepartmentName}, ${newRoleName}`);
             try{
                 const split = employeeInfo.split(' ');
                 //get the content after the last , 
                 const employeeId = split[0].trim();
-                //console.log(`EMPLOYEE id = ${employeeId}`);
 
                 //get the roleId
                 const roleId = await this.getRoleId(newRoleName, newDepartmentName);
-                //console.log(`roleId = ${roleId}`); 
 
                 this.sqlStatement = 
                     `UPDATE employee
@@ -540,7 +505,6 @@ class Query{
 
     //#region RENDER TABLE
         async outputTable(result: QueryResult){
-            //console.log("RUNNING outputTable method");
             try{
                 //ensure result.rowCount is truthy
                 if(result.rowCount){
